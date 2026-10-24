@@ -220,16 +220,16 @@ CREATE TABLE kev_catalog (
 );
 
 INSERT INTO kev_catalog VALUES
-('CVE-2023-46805', 'Ivanti', 'Connect Secure and Policy Secure Gateways', 'Authentication Bypass Vulnerability', '2024-01-10', 'Ivanti Connect Secure and Policy Secure Gateways contain an authentication bypass vulnerability allowing remote attackers to access restricted resources.', 'Apply vendor mitigations and security updates immediately.', '2024-01-22', 'Known'),
-('CVE-2023-4863', 'Google', 'Chrome and libwebp', 'Heap Buffer Overflow in WebP', '2023-09-13', 'Google Chrome and libwebp library contain a heap buffer overflow in WebP image processing allowing arbitrary code execution.', 'Apply vendor patch released in September 2023.', '2023-10-04', 'Known');
+('CVE-2023-46805', 'Ivanti', 'Connect Secure and Policy Secure', 'Ivanti Connect Secure and Policy Secure Authentication Bypass Vulnerability', '2024-01-10', 'Ivanti Connect Secure (ICS, formerly known as Pulse Connect Secure) and Ivanti Policy Secure gateways contain an authentication bypass vulnerability in the web component that allows an attacker to access restricted resources by bypassing control checks.', 'Apply mitigations per vendor instructions or discontinue use of the product if mitigations are unavailable.', '2024-01-22', 'Known'),
+('CVE-2023-4863', 'Google', 'Chromium WebP', 'Google Chromium WebP Heap-Based Buffer Overflow Vulnerability', '2023-09-13', 'Google Chromium WebP contains a heap-based buffer overflow vulnerability that allows a remote attacker to perform an out-of-bounds memory write via a crafted HTML page.', 'Apply mitigations per vendor instructions or discontinue use of the product if mitigations are unavailable.', '2023-10-04', 'Unknown');
 ```
 
 #### Source 5: `nvd_cves` (External Public — NIST National Vulnerability Database)
 ```sql
 CREATE TABLE nvd_cves (
     cve_id VARCHAR(20),
-    published_date VARCHAR(20),
-    last_modified_date VARCHAR(20),
+    published_date VARCHAR(30),
+    last_modified_date VARCHAR(30),
     vuln_status VARCHAR(40),
     cvss_v3_score FLOAT,
     cvss_v3_severity VARCHAR(20),
@@ -238,8 +238,8 @@ CREATE TABLE nvd_cves (
 );
 
 INSERT INTO nvd_cves VALUES
-('CVE-2023-46805', '2024-01-12T13:15:00Z', '2024-01-16T17:00:00Z', 'Analyzed', 8.2, 'HIGH', 'CWE-287', 'An authentication bypass vulnerability in Ivanti Connect Secure allows an attacker to bypass control checks and access restricted resources.'),
-('CVE-2023-4863', '2023-09-12T15:15:00Z', '2023-09-14T20:00:00Z', 'Analyzed', 8.8, 'HIGH', 'CWE-787', 'Heap buffer overflow in WebP in Google Chrome prior to 116.0.5845.187 allowed a remote attacker to perform out of bounds memory write via a crafted HTML page.');
+('CVE-2023-46805', '2024-01-12T17:15:09.530', '2026-10-01T21:17:17.487', 'Analyzed', 8.2, 'HIGH', 'CWE-287', 'An authentication bypass vulnerability in the web component of Ivanti ICS 9.x, 22.x and Ivanti Policy Secure allows a remote attacker to access restricted resources by bypassing control checks.'),
+('CVE-2023-4863', '2023-09-12T15:15:24.327', '2026-06-17T06:38:46.547', 'Analyzed', 8.8, 'HIGH', 'CWE-787', 'Heap buffer overflow in libwebp in Google Chrome prior to 116.0.5845.187 and libwebp 1.3.2 allowed a remote attacker to perform an out of bounds memory write via a crafted HTML page.');
 ```
 
 ### Step 1.3: Master Seeding Script (`seed_sql.py`) & Offline `SAMPLE_MODE`

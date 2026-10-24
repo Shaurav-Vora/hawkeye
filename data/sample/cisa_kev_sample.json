@@ -1,0 +1,24 @@
+[
+  {
+    "cveID": "CVE-2023-46805",
+    "vendorProject": "Ivanti",
+    "product": "Connect Secure and Policy Secure",
+    "vulnerabilityName": "Ivanti Connect Secure and Policy Secure Authentication Bypass Vulnerability",
+    "dateAdded": "2024-01-10",
+    "shortDescription": "Ivanti Connect Secure (ICS, formerly known as Pulse Connect Secure) and Ivanti Policy Secure gateways contain an authentication bypass vulnerability in the web component that allows an attacker to access restricted resources by bypassing control checks.",
+    "requiredAction": "Apply mitigations per vendor instructions or discontinue use of the product if mitigations are unavailable.",
+    "dueDate": "2024-01-22",
+    "knownRansomwareCampaignUse": "Known"
+  },
+  {
+    "cveID": "CVE-2023-4863",
+    "vendorProject": "Google",
+    "product": "Chromium WebP",
+    "vulnerabilityName": "Google Chromium WebP Heap-Based Buffer Overflow Vulnerability",
+    "dateAdded": "2023-09-13",
+    "shortDescription": "Google Chromium WebP contains a heap-based buffer overflow vulnerability that allows a remote attacker to perform an out-of-bounds memory write via a crafted HTML page.",
+    "requiredAction": "Apply mitigations per vendor instructions or discontinue use of the product if mitigations are unavailable.",
+    "dueDate": "2023-10-04",
+    "knownRansomwareCampaignUse": "Unknown"
+  }
+]

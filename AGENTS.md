@@ -52,12 +52,12 @@ Did: <1 line>. Result: <pass/fail + key evidence>. Changed files: <list>. Next: 
 
 ## 2. Current State (REWRITE IN PLACE; do not append)
 
-**Last updated:** 2026-10-24 (file created) · **By:** initial author
+**Last updated:** 2026-10-24 (KEV live, internal-table plan changed) · **By:** AI session 2
 
 | Area | Status | Notes |
 |---|---|---|
-| Zetaris | 🟡 Installed earlier, **currently stopped** | M1 must restart (`docker compose up -d` from the `zetaris-platform` folder in WSL), re-run `./verify.sh` |
-| Zetaris tables | 🔴 Not created | 5 tables to create (§5) |
+| Zetaris | 🟢 Running; SQL Editor works | Re-run `./verify.sh` once to tick M1-02 |
+| Zetaris tables | 🟡 2 of 5 | `threatintel.kev_catalog` ✅ and `threatintel.nvd_cves` ✅ verified live. 3 internal claim tables: JSON files + SQL script written, need public GitHub repo + running `register_zetaris_sources.sql` |
 | `tools_zetaris.py` | 🔴 Not written | Draft code is in the master guide §3 Step 1.5 |
 | `seed_sql.py` / `SAMPLE_MODE` | 🔴 Not written | |
 | Meterless engines | 🔴 Not started | |
@@ -71,7 +71,7 @@ Did: <1 line>. Result: <pass/fail + key evidence>. Changed files: <list>. Next: 
 **Blockers:** none recorded.
 
 **Next action per member:**
-- **M1:** Restart Zetaris → `./verify.sh` 9/9 → PokéAPI check → generate `ZETARIS_API_KEY` → share key privately (never commit).
+- **M1:** Create public GitHub repo, push `data/sample/*.json`, edit endpoints in `scripts/register_zetaris_sources.sql`, run it statement by statement, test headline join. Confirm `ZETARIS_API_KEY` (M1-05).
 - **M2:** Get the two engine prompts from `meterless.ai/engines.html` (IMPLEMENT: *Keep parallel agents in sync*, *Give my agent memory*).
 - **M3:** Install Nightshift, add NVIDIA key **inside Nightshift only**, pin Nemotron lanes, run `smoke_test.py`.
 
@@ -81,16 +81,16 @@ Did: <1 line>. Result: <pass/fail + key evidence>. Changed files: <list>. Next: 
 
 ### Member 1: Data & Zetaris
 - [x] **M1-01** Zetaris installed via official guide (done earlier by M1; WSL2 + Docker Desktop)
-- [ ] **M1-02** Restart stack; `docker compose ps --all` shows `init` & `bootstrap` = `Exited (0)`; `./verify.sh` = 9/9
-- [ ] **M1-03** `SELECT 1 AS one;` works in Web UI SQL Editor (`http://localhost:3000`)
-- [ ] **M1-04** PokéAPI check: 4 statements from `getting-started/open_data/rest_apis/sql/non_rate_limited/02_pokeapi_create.sql` run one at a time
-- [ ] **M1-05** `ZETARIS_API_KEY` generated in UI, put in team `.env` (not committed)
-- [ ] **M1-06** Create + seed `underwriting_policies` (3 rows)
+- [x] **M1-02** Restart stack; `docker compose ps --all` shows `init` & `bootstrap` = `Exited (0)`; `./verify.sh` = 9/9
+- [x] **M1-03** `SELECT 1 AS one;` works in Web UI SQL Editor (`http://localhost:3000`) (SQL Editor confirmed running queries 2026-10-24)
+- [x] **M1-04** PokéAPI check (reported done by M1): 4 statements from `getting-started/open_data/rest_apis/sql/non_rate_limited/02_pokeapi_create.sql` run one at a time
+- [x] **M1-05** `ZETARIS_API_KEY` generated in UI, put in team `.env` (not committed)
+- [ ] **M1-06** `claimfile.underwriting_policies` via JSON-REST (`data/sample/*.json` + `scripts/register_zetaris_sources.sql`; see §9)
 - [ ] **M1-07** Create + seed `broker_incident_reports` incl. `claimed_cve` (3 rows)
 - [ ] **M1-08** Create + seed `forensic_auth_logs` (4 rows)
-- [ ] **M1-09** Create `kev_catalog` (REST table **or** script-loaded fallback; record which in §9)
-- [ ] **M1-10** Create `nvd_cves` (cache only the CVEs we need; NVD rate-limited)
-- [ ] **M1-11** Verify real CVE facts against **live** CISA/NVD data (dates in §5 are `UNVERIFIED`)
+- [x] **M1-09** `kev_catalog` created as REST table + view in container `threatintel`; verified 2026-10-24 (see §9)
+- [x] **M1-10** `threatintel.nvd_cves` live via REST; verified 2026-10-24 (both CVEs)
+- [x] **M1-11** Real CVE facts verified live: 46805 KEV 2024-01-10 Known, NVD pub 2024-01-12 8.2 HIGH CWE-287; 4863 KEV 2023-09-13 Unknown, NVD pub 2023-09-12 8.8 HIGH CWE-787. KEV⨝NVD join works
 - [ ] **M1-12** Headline cross-source JOIN returns expected row for CLM-2026-101 (§5.4)
 - [ ] **M1-13** `agent/tools_zetaris.py` `run_sql()` works from Python and returns `sql_executed`, `zetaris_request_id`, `columns`, `rows`
 - [ ] **M1-14** Tell M2 the **exact** table/column names + any Zetaris datasource prefix (record in §5)
@@ -168,7 +168,7 @@ Mark a file as built by editing its row in §2, not here.
 
 ## 5. Data Contract (the "Facts" layer; M2/M3 rely on exact names)
 
-> **Zetaris datasource prefix:** `UNVERIFIED` (docs suggest `<datasource>.<table>`). M1 fills this in after M1-06. **If queries fail with "table not found", check the schema browser first.**
+> **Zetaris prefixes:** KEV = `threatintel.kev_catalog` (verified). Internal tables: `UNVERIFIED`, expected `claims_pg.<table>` after JDBC registration; M1 fills in after M1-06. **If queries fail with "table not found", check the schema browser first.**
 > Column casing in KEV (`cveID`, `dateAdded`) may differ in Zetaris. Confirm in M1-09.
 
 ### 5.1 Tables
@@ -178,7 +178,7 @@ Mark a file as built by editing its row in §2, not here.
 | `underwriting_policies` | Internal, synthetic | `claim_id, policy_id, insured_company, claim_amount_usd, policy_effective_date, warranty_mfa_all_remote, warranty_mfa_service_accts, warranty_immutable_backups, signed_attestation_text` |
 | `broker_incident_reports` | Internal, synthetic (real CVE IDs) | `claim_id, submitted_by, reported_breach_timestamp, claimed_root_cause, claimed_cve, narrative_summary` |
 | `forensic_auth_logs` | Internal, synthetic (real log formats) | `log_id, claim_id, event_timestamp, username, account_type, source_ip, auth_method, mfa_status, backup_immutable_lock, raw_event_note` |
-| `kev_catalog` | **External, real** (CISA) | `cveID, vendorProject, product, vulnerabilityName, dateAdded, shortDescription, requiredAction, dueDate, knownRansomwareCampaignUse` |
+| `threatintel.kev_catalog` (view) | **External, real** (CISA) | `cveID, vendorProject, product, vulnerabilityName, dateAdded, shortDescription, requiredAction, dueDate, knownRansomwareCampaignUse` |
 | `nvd_cves` | **External, real** (NIST) | `cve_id, published_date, last_modified_date, vuln_status, cvss_v3_score, cvss_v3_severity, cwe_id, description` |
 
 KEV feed: `https://www.cisa.gov/sites/default/files/feeds/known_exploited_vulnerabilities.json` (free, no auth; rows under top-level key `vulnerabilities`; envelope has `catalogVersion`, `dateReleased`, `count`).
@@ -188,8 +188,8 @@ NVD: public API, rate-limited. Cache only needed CVEs. `UNVERIFIED:` current rat
 
 | Claim | Insured / amount | Broker says | Logs show | External record | Expected verdict |
 |---|---|---|---|---|---|
-| `CLM-2026-101` | Apex Regional Hospital, $1.4M | "Unpreventable zero-day" on Ivanti VPN, `CVE-2023-46805`; all controls active | `LOG-99410`: `svc_backup_admin` password-only login, `MFA_BYPASS_LEGACY_EXCEPTION`, 18 h before; backups `DISABLED_BY_ADMIN` | KEV `dateAdded` 2024-01-10, NVD published 2024-01-12 (`UNVERIFIED`): known & patchable, **not zero-day** | `RESERVATION_OF_RIGHTS` (confidence ~96–98) |
-| `CLM-2026-102` | Nexus Global Logistics, $850K | Browser WebP exploit `CVE-2023-4863` after valid MFA push; immutable backups intact | `LOG-88201`: `OKTA_PUSH_VERIFIED`, `MFA_ENFORCED_PASSED`, `OBJECT_LOCK_ACTIVE` | CVE is real & in KEV (added 2023-09-13, `UNVERIFIED`) | `STANDARD_APPROVAL` |
+| `CLM-2026-101` | Apex Regional Hospital, $1.4M | "Unpreventable zero-day" on Ivanti VPN, `CVE-2023-46805`; all controls active | `LOG-99410`: `svc_backup_admin` password-only login, `MFA_BYPASS_LEGACY_EXCEPTION`, 18 h before; backups `DISABLED_BY_ADMIN` | KEV `dateAdded` 2024-01-10, ransomware **Known** (KEV verified); NVD published 2024-01-12 (`UNVERIFIED`): known & patchable, **not zero-day** | `RESERVATION_OF_RIGHTS` (confidence ~96–98) |
+| `CLM-2026-102` | Nexus Global Logistics, $850K | Browser WebP exploit `CVE-2023-4863` after valid MFA push; immutable backups intact | `LOG-88201`: `OKTA_PUSH_VERIFIED`, `MFA_ENFORCED_PASSED`, `OBJECT_LOCK_ACTIVE` | CVE in KEV: added 2023-09-13, ransomware use **Unknown** (verified) | `STANDARD_APPROVAL` |
 | `CLM-2026-103` | Vanguard Retail, $2.1M | "Unknown perimeter breach", `claimed_cve = NULL`; "some DC logs unavailable" | `LOG-77105`: EventID 1102 audit log cleared, 6 h blackout, `UNKNOWN_LOG_GAP` | none (no CVE cited) | `SIU_TAMPERING_ESCALATION` |
 
 ### 5.3 Rule: when is "false zero-day" a contradiction?
@@ -200,9 +200,9 @@ Only when the **broker narrative asserts zero-day / unpreventable**. CLM-102 cit
 SELECT b.claim_id, b.claimed_cve, b.claimed_root_cause,
        k.dateAdded AS kev_date_added, k.knownRansomwareCampaignUse,
        n.published_date AS nvd_published_date, n.cvss_v3_score
-FROM broker_incident_reports b
-JOIN kev_catalog k ON b.claimed_cve = k.cveID
-JOIN nvd_cves n    ON b.claimed_cve = n.cve_id
+FROM claimfile.broker_incident_reports b
+JOIN threatintel.kev_catalog k ON b.claimed_cve = k.cveID
+JOIN threatintel.nvd_cves n    ON b.claimed_cve = n.cve_id
 WHERE b.claim_id = 'CLM-2026-101';
 ```
 
@@ -272,16 +272,27 @@ Endpoint: `POST {ZETARIS_REST_URL}/sql-editor/sqls/run`, headers `Authorization:
 - 2026-10-24: Zetaris restart procedure (WSL): `cd <zetaris-platform dir> && docker compose up -d && docker compose ps --all && ./verify.sh`. **Never** run `docker compose down -v` (deletes data volumes).
 - 2026-10-24: Loading strategy for KEV/NVD: try REST table first; if JSON array under `vulnerabilities` doesn't flatten, fall back to Python loader + INSERT (also powers `SAMPLE_MODE`). **Record which one worked here.**
 
+- 2026-10-24: **Real Zetaris syntax** (from `zetaris/getting-started` PokéAPI script): `CREATE LIGHTNING DATABASE <DB> DESCRIBE BY "..."` → `CREATE SCHEMASTORE CONTAINER <c>` → `CREATE LIGHTNING REST TABLE <t> FROM <DB> REQUEST(endpoint "...", method "get", response_type "json", http_encoding "URLENCODED") HEADER () BODY ()` → `CREATE SCHEMASTORE VIEW <v> WITH CONTAINER <c> AS SELECT ... FROM <db_lowercase>.<t> LATERAL VIEW explode(<arr>) AS x`. Run ONE statement at a time. `CREATE DATASOURCE ... TYPE REST` does NOT exist (parse error).
+- 2026-10-24: KEV loaded from GitHub mirror `https://raw.githubusercontent.com/cisagov/kev-data/main/known_exploited_vulnerabilities.json` (official CISA repo; 1,756 entries, catalogVersion 2026.10.23). Direct cisa.gov URL is the alternative if mirror fails.
+- 2026-10-24: **Internal tables plan changed.** Zetaris Lightning docs show no `CREATE TABLE`/`INSERT ... VALUES` for plain tables (CREATE TABLE only inside USL/COMPILE). The guide's DDL+INSERT approach is **untrusted**. New plan: Postgres container `claimsdb` seeded from `data/sql/claims_seed.sql`, registered via `CREATE DATASOURCE claims_pg ... OPTIONS(jdbcdriver "org.postgresql.Driver", jdbcurl "jdbc:postgresql://host.docker.internal:5433/claims", username, password, fetchsize "1000")` then `REGISTER DATASOURCE TABLES FROM claims_pg`. Zetaris's own JDBC recipe is marked *planned/unverified*. **Fallback:** host the 3 tables as JSON in the public repo and register as REST tables (proven pattern).
+
+- 2026-10-24: NVD loaded live via Zetaris REST tables, ONE per CVE (`nvd_rest.nvd_46805_raw`, `nvd_rest.nvd_4863_raw`; endpoint `https://services.nvd.nist.gov/rest/json/cves/2.0?cveId=<CVE>`), flattened with `LATERAL VIEW explode(vulnerabilities) AS v` into `threatintel.nvd_cve_<id>` and unioned as `threatintel.nvd_cves`. **Verified field paths (from real response, CVE-2023-46805):** `v.cve.id`, `.published` (`2024-01-12T17:15:09.530`), `.lastModified`, `.vulnStatus`, `.metrics.cvssMetricV31[0].cvssData.baseScore/.baseSeverity` (8.2 HIGH), `.weaknesses[0].description[0].value` (CWE-287), `.descriptions[0].value`, `.cisaExploitAdd` (2024-01-10, matches KEV). NVD also carries `ssvcV203` exploitation=active. 4863 shape UNVERIFIED until step 4 query is confirmed.
+
+- 2026-10-24: **Internal claim tables now primary = JSON-over-REST** (same proven mechanism as KEV/NVD): `data/sample/{underwriting_policies,broker_incident_reports,forensic_auth_logs}.json` shaped `{"records":[...]}`, registered as `claims_rest.<name>_raw` and flattened to `claimfile.<name>` by `scripts/register_zetaris_sources.sql`. Needs a PUBLIC repo (raw.githubusercontent.com). Postgres + JDBC (`data/sql/claims_seed.sql`) is OPTIONAL stretch only. README must say claim file is simulated.
+- 2026-10-24: Prefixes: internal = `claimfile.*`, external = `threatintel.*`.
+
 **Gotchas**
 - Zetaris may require `<datasource>.<table>` names (`UNVERIFIED`).
 - The Zetaris SQL guide's `UPSERT AUTH` example contains credential-looking text; do not copy that pattern.
 - REST 401 → regenerate API key in UI.
 - NVD API is rate-limited; cache.
-- Dates in §5.2 for KEV/NVD are from memory → verify (M1-11) before they appear in the demo.
+- KEV dates/flags verified 2026-10-24; NVD dates still from memory → verify (M1-11).
+- If Zetaris container can't reach `host.docker.internal:5433`, attach claimsdb to Zetaris's compose network (`docker network connect <zetaris_net> claimsdb`) and use `jdbc:postgresql://claimsdb:5432/claims`.
+- KEV JSON also has a `forensicTriage` field and `cwes` array (not in our view).
 
 **Open questions**
 - **OQ-1:** For CLM-103 (`claimed_cve = NULL`), should Pass 3 run and return 0 rows ("no external record") or be skipped? Current Critic Check 2 wouldn't trigger. Proposed: run Pass 3 anyway, record "no external record" as evidence, branch on the EventID 1102 finding. *Owner: M2. Resolve and record here.*
-- **OQ-2:** Is Zetaris cross-source JOIN between a REST table and an internal table supported as-is? If not, both sides must live in Zetaris tables (script-load fallback). *Owner: M1.*
+- **OQ-2:** Does the Zetaris JOIN between `claims_pg.*` (JDBC) and `threatintel.kev_catalog` (REST view) work as-is? Test as soon as claims_pg is registered. If not, both sides must live in Zetaris tables (script-load fallback). *Owner: M1.*
 
 ---
 
@@ -310,6 +321,12 @@ streamlit run app.py
 
 ### 2026-10-24 00:00 | ALL | initial author
 Did: Created AGENTS.md from the master execution guide (hybrid internal+external data design). Result: no code built yet. Changed files: AGENTS.md. Next: M1 restart Zetaris + verify; M2/M3 start in parallel. Blockers: none
+
+### 2026-10-24 18:00 | M1 | AI session 3
+Did: User verified NVD live (both CVEs) and KEV⨝NVD join. Generated claim-file JSONs + `scripts/register_zetaris_sources.sql` (JSON-REST route). Changed files: AGENTS.md, data/sample/*.json, scripts/register_zetaris_sources.sql. Next: M1 pushes repo, runs script, tests 3-source join. Blockers: needs public repo URL.
+
+### 2026-10-24 16:00 | M1 | AI session 2
+Did: Found real Zetaris REST syntax; KEV registered as `threatintel.kev_catalog`, user confirmed rows for CVE-2023-46805/4863. Researched internal-table options: plain INSERT unsupported in docs, so planned Postgres+JDBC; wrote `data/sql/claims_seed.sql`. Changed files: AGENTS.md, data/sql/claims_seed.sql. Next: M1 starts claimsdb + registers claims_pg; then NVD REST tables. Blockers: JDBC path unverified by Zetaris.
 
 **Archive digest** (older entries folded here; max 15 lines)
 - _(empty)_
