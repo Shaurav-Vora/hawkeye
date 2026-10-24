@@ -91,7 +91,7 @@ Did: <1 line>. Result: <pass/fail + key evidence>. Changed files: <list>. Next: 
 - [x] **M1-09** `kev_catalog` created as REST table + view in container `threatintel`; verified 2026-10-24 (see §9)
 - [x] **M1-10** `threatintel.nvd_cves` live via REST; verified 2026-10-24 (both CVEs)
 - [x] **M1-11** Real CVE facts verified live: 46805 KEV 2024-01-10 Known, NVD pub 2024-01-12 8.2 HIGH CWE-287; 4863 KEV 2023-09-13 Unknown, NVD pub 2023-09-12 8.8 HIGH CWE-787. KEV⨝NVD join works
-- [ ] **M1-12** Headline cross-source JOIN returns expected row for CLM-2026-101 (§5.4)
+- [x] **M1-12** Headline cross-source JOIN returns expected row for CLM-2026-101 (§5.4)
 - [ ] **M1-13** `agent/tools_zetaris.py` `run_sql()` works from Python and returns `sql_executed`, `zetaris_request_id`, `columns`, `rows`
 - [ ] **M1-14** Tell M2 the **exact** table/column names + any Zetaris datasource prefix (record in §5)
 - [ ] **M1-15** `seed_sql.py`: one command loads all 5 tables; live mode and `SAMPLE_MODE=true` both tested

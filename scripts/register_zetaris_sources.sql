@@ -10,7 +10,7 @@ CREATE SCHEMASTORE CONTAINER claimfile;
 
 -- ---- underwriting_policies ----
 CREATE LIGHTNING REST TABLE underwriting_policies_raw FROM CLAIMS_REST REQUEST(
-    endpoint "https://raw.githubusercontent.com/<GITHUB_USER>/<REPO>/main/data/sample/underwriting_policies.json",
+    endpoint "https://raw.githubusercontent.com/shaurav-vora/hawkeye/main/data/sample/underwriting_policies.json",
     method "get",
     response_type "json",
     http_encoding "URLENCODED"
@@ -33,7 +33,7 @@ LATERAL VIEW explode(records) AS r;
 
 -- ---- broker_incident_reports ----
 CREATE LIGHTNING REST TABLE broker_incident_reports_raw FROM CLAIMS_REST REQUEST(
-    endpoint "https://raw.githubusercontent.com/<GITHUB_USER>/<REPO>/main/data/sample/broker_incident_reports.json",
+    endpoint "https://raw.githubusercontent.com/shaurav-vora/hawkeye/main/data/sample/broker_incident_reports.json",
     method "get",
     response_type "json",
     http_encoding "URLENCODED"
@@ -53,7 +53,7 @@ LATERAL VIEW explode(records) AS r;
 
 -- ---- forensic_auth_logs ----
 CREATE LIGHTNING REST TABLE forensic_auth_logs_raw FROM CLAIMS_REST REQUEST(
-    endpoint "https://raw.githubusercontent.com/<GITHUB_USER>/<REPO>/main/data/sample/forensic_auth_logs.json",
+    endpoint "https://raw.githubusercontent.com/shaurav-vora/hawkeye/main/data/sample/forensic_auth_logs.json",
     method "get",
     response_type "json",
     http_encoding "URLENCODED"
