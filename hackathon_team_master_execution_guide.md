@@ -275,7 +275,8 @@ The three internal tables are served as JSON from the team's **public** GitHub r
 
 **The data itself** lives in the JSON files (3 claims: CLM-2026-101 Apex Regional Hospital $1.4M, CLM-2026-102 Nexus Global Logistics $850K, CLM-2026-103 Vanguard Retail Group $2.1M; key log rows `LOG-99410/99411` for 101, `LOG-88201` for 102, `LOG-77105` for 103). Optional stretch (not required): `data/sql/claims_seed.sql` loads the same data into a Postgres container, which would need a JDBC `CREATE DATASOURCE ... OPTIONS(...)` (Zetaris's own JDBC recipe is unverified).
 
-### Step 1.3: Registration Script (`seed_sql.py`) & Offline `SAMPLE_MODE` ⬜ TODO
+### Step 1.3: Registration Script (`seed_sql.py`) & Offline `SAMPLE_MODE` ◐ `seed_sql.py` WRITTEN · ⬜ `SAMPLE_MODE` TODO
+> **Team setup decision:** every member runs their own local Zetaris. Teammates follow `docs/TEAMMATE_ZETARIS_SETUP.md`, then run `python seed_sql.py` (reads `scripts/register_zetaris_sources.sql`, fills `{{DATA_BASE_URL}}` from the git remote or env `DATA_BASE_URL`, skips "already exists", stops on a real error, then runs the self-test). Mock-tested; still needs its first real run on a fresh teammate Zetaris.
 Goal: a judge must be able to set everything up **without typing SQL by hand**. Write `seed_sql.py` so that it:
 1. Reads `scripts/register_zetaris_sources.sql`, splits it into single statements, and sends each through `run_sql()` (Step 1.5). Treat "already exists" errors as success so it is safe to re-run.
 2. Prints a pass/fail line per source and runs the three row-count tests.

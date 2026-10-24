@@ -94,7 +94,7 @@ Did: <1 line>. Result: <pass/fail + key evidence>. Changed files: <list>. Next: 
 - [x] **M1-12** Headline 3-source JOIN verified for CLM-2026-101 (claim file + KEV + NVD)
 - [ ] **M1-13** `agent/tools_zetaris.py` `run_sql()`: code written + mock-tested 2026-10-24; tick after `python -m agent.tools_zetaris` prints ALL PASS against real Zetaris
 - [ ] **M1-14** Tell M2 the **exact** table/column names + any Zetaris datasource prefix (record in §5)
-- [ ] **M1-15** `seed_sql.py`: one command loads all 5 tables; live mode and `SAMPLE_MODE=true` both tested
+- [ ] **M1-15** `seed_sql.py`: one-command registration of all 5 sources. **Written + mock-tested 2026-10-24** (live mode). Tick after a TEAMMATE runs it on a fresh Zetaris; `SAMPLE_MODE=true` still TODO
 - [ ] **M1-16** `data/sample/*` committed (small) + `data/README.md` (URLs, licence, registration steps, limitations)
 - [ ] **M1-17** Repo audit: no secrets committed, `.env.example` only, README setup runs clean
 
@@ -283,6 +283,10 @@ Endpoint: `POST {ZETARIS_REST_URL}/sql-editor/sqls/run`, headers `Authorization:
 
 - 2026-10-24: `tools_zetaris.py` built from Zetaris's official client; the master guide's old draft had `source:"sqlEditor"` (wrong case). Zetaris's own scripts read `.env.local`; ours reads `.env` via python-dotenv.
 
+- 2026-10-24: **Team decision: every member runs their OWN local Zetaris** (Zetaris is on each laptop, `localhost:8888` is not shared; API keys are per instance). `docs/TEAMMATE_ZETARIS_SETUP.md` is the setup guide; `python seed_sql.py` rebuilds all 5 sources from `scripts/register_zetaris_sources.sql` (claim-file URLs are HARDCODED to the team's one public repo, since everyone shares it; if the `{{DATA_BASE_URL}}` placeholder is still present, `seed_sql.py` derives it from env `DATA_BASE_URL` or the git remote. Don't point `origin` at a fork without data). Do NOT commit `zetaris-platform/`.
+
+- 2026-10-24: **Shared-repo workflow.** All members are collaborators on ONE public GitHub repo (clone it; do not fork, or `seed_sql.py` will derive the data URL from the fork). Run `git pull --rebase` before work and before `git push`; never force-push. File ownership: M1 = `agent/tools_zetaris.py`, `seed_sql.py`, `scripts/`, `data/`, `docs/`; M2 = `agent/meterless_state.py`, `graph.py`, `prompts.py`; M3 = `agent/llm.py`, `app.py`, deck/video. **Do not change `data/sample/*.json` on `main` without telling M1** (every member's Zetaris reads those raw URLs from `main`; a bad push breaks everyone's claim tables). In AGENTS.md edit only your own member's checklist plus the session log; on a merge conflict keep both sides. Repo must stay PUBLIC (Zetaris fetches raw URLs anonymously). `.env` is never committed.
+
 **Gotchas**
 - `DESCRIBE BY` text allows only letters, digits, `_ . - ,` and spaces. No parentheses or other punctuation (error: "Description is invalid").
 - Zetaris may require `<datasource>.<table>` names (`UNVERIFIED`).
@@ -333,6 +337,9 @@ Did: Found real Zetaris REST syntax; KEV registered as `threatintel.kev_catalog`
 
 ### 2026-10-24 20:00 | M1 | AI session 4
 Did: M1 verified all 5 sources + API key. Wrote `agent/tools_zetaris.py` + `agent/__init__.py` from Zetaris's official client; mock-server tested (ok, 400, 401, missing key, empty, unreachable). Updated guide statuses. Next: M1 runs `python -m agent.tools_zetaris` live. Blockers: none
+
+### 2026-10-24 21:00 | M1 | AI session 5
+Did: Decision: each member runs own Zetaris. Wrote `seed_sql.py` (splits SQL, skips 'already exists', stops on real error, runs self-test), full 18-statement `scripts/register_zetaris_sources.sql`, `docs/TEAMMATE_ZETARIS_SETUP.md`; mock-tested. Next: M1 pushes, M2/M3 install own Zetaris and run seed_sql.py (first real fresh-instance test). Blockers: none
 
 **Archive digest** (older entries folded here; max 15 lines)
 - _(empty)_
