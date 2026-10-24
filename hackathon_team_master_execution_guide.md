@@ -96,9 +96,9 @@ If one script produces three internal tables in a single database, it is "multi-
 
 | Source (Zetaris name) | Origin | Real or Synthetic | How Zetaris Reaches It | Status |
 | :--- | :--- | :--- | :--- | :--- |
-| `claimfile.underwriting_policies` | Insurer's policy administration file | Synthetic (confidential in reality) | REST table over `data/sample/underwriting_policies.json` on our **public** GitHub repo (raw URL), flattened by a view | ◐ |
+| `claimfile.underwriting_policies` | Insurer's policy administration file | Synthetic (confidential in reality) | REST table over `data/sample/underwriting_policies.json` on our **public** GitHub repo (raw URL), flattened by a view | ✅ verified |
 | `claimfile.broker_incident_reports` | Broker's claim submission | Synthetic, but cites **real CVE IDs** | Same pattern (`broker_incident_reports.json`) | ✅ verified |
-| `claimfile.forensic_auth_logs` | Client's SIEM / VPN / DC export | Synthetic, using real log formats | Same pattern (`forensic_auth_logs.json`) | ◐ |
+| `claimfile.forensic_auth_logs` | Client's SIEM / VPN / DC export | Synthetic, using real log formats | Same pattern (`forensic_auth_logs.json`) | ✅ verified |
 | **`threatintel.kev_catalog`** | CISA's Known Exploited Vulnerabilities Catalog (1,756 entries, catalog version 2026.10.23) | **Real, keyless, public, LIVE** | REST table over GitHub mirror of CISA's official repo (`cisagov/kev-data`) | ✅ |
 | **`threatintel.nvd_cves`** | NIST's National Vulnerability Database | **Real, public, LIVE** | One REST table per CVE calling NIST's API (`.../cves/2.0?cveId=<CVE>`), unioned by a view | ✅ |
 
@@ -107,13 +107,13 @@ If one script produces three internal tables in a single database, it is "multi-
 CISA's feed is also available directly at `https://www.cisa.gov/sites/default/files/feeds/known_exploited_vulnerabilities.json`; we use the GitHub mirror because cisa.gov may block non-browser clients.
 
 ### 3.2 Member 1 Half-Day Execution Plan (with status)
-1. ✅ **DONE: Setup & Preflight:** Zetaris installed, restarted, `SELECT 1` works, PokéAPI check done. ⬜ *Confirm* the `ZETARIS_API_KEY` is generated (Management → API Tokens) and saved in `.env`.
+1. ✅ **DONE: Setup & Preflight:** Zetaris installed, restarted, `SELECT 1` works, PokéAPI check done. ✅ `ZETARIS_API_KEY` generated (Management → API Tokens) and saved in `.env`.
 2. ✅ **DONE: Register CISA `kev_catalog`:** REST table + view, verified rows for both claim CVEs. The "Option B" Python-loader fallback was **not needed**.
 3. ✅ **DONE: Register NIST `nvd_cves`:** one REST table per CVE (only the 2 CVEs our claims cite, which respects NVD rate limits), unioned view, verified.
-4. ◐ **IN PROGRESS: Claim-file tables:** broker table ✅ verified; run the rest of `scripts/register_zetaris_sources.sql` and confirm `underwriting_policies` (3 rows) and `forensic_auth_logs` (4 rows).
+4. ✅ **DONE: Claim-file tables:** `scripts/register_zetaris_sources.sql` fully run; `underwriting_policies` (3), `broker_incident_reports` (3) and `forensic_auth_logs` (4) verified.
 5. ⬜ **TODO: Write `seed_sql.py`** (Step 1.3) so registration is automated, with a `SAMPLE_MODE=true` path that needs no Zetaris.
 6. ✅ **DONE: Verify the headline 3-source join** for CLM-2026-101 (Step 1.4).
-7. ⬜ **TODO: Build `agent/tools_zetaris.py`** (Step 1.5) and hand the exact table names (§3.3) to Members 2 and 3.
+7. ◐ **IN PROGRESS: `agent/tools_zetaris.py`** is written (Step 1.5) and tested against a mock server. ⬜ Run `python -m agent.tools_zetaris` against real Zetaris, then hand the table names (§3.3) to Members 2 and 3.
 
 ### 3.3 Verified Zetaris Syntax & Gotchas (read before writing any SQL)
 * **Run ONE statement at a time** in the SQL Editor.
@@ -158,11 +158,11 @@ Zetaris runs in Docker and requires **8 GB RAM and 4 CPUs allocated to Docker De
    Confirm **9/9 checks pass**.
 7. Log in at `http://localhost:3000`, open the **SQL Editor**, and run `SELECT 1 AS one;`.
 8. Clone the Zetaris starter repo (`git clone https://github.com/zetaris/getting-started.git`) and run the 4 PokéAPI statements from `open_data/rest_apis/sql/non_rate_limited/02_pokeapi_create.sql` one at a time to pass the official setup check.
-9. In the Zetaris Web UI (`http://localhost:3000`), open **Management → API Tokens**, click **+**, give it a name (e.g. `hackathon-agent`), keep the default expiry (max 90 days), create it, and **copy the key immediately** (it is shown in plaintext exactly once; max 3 per user). Save it as `ZETARIS_API_KEY` in your local `.env` (never commit it). ⬜ *Confirm done.*
+9. In the Zetaris Web UI (`http://localhost:3000`), open **Management → API Tokens**, click **+**, give it a name (e.g. `hackathon-agent`), keep the default expiry (max 90 days), create it, and **copy the key immediately** (it is shown in plaintext exactly once; max 3 per user). Save it as `ZETARIS_API_KEY` in your local `.env` (never commit it). ✅ *Done.*
 
 **Restarting after you close Docker (takes minutes, not 30-45):** start Docker Desktop, then in WSL: `cd ~/zetaris-platform && docker compose up -d`, wait until `docker compose ps --all` shows `init`/`bootstrap` as `Exited (0)`, then `./verify.sh`. **Never run `docker compose down -v`** (it deletes your data volumes); use `docker compose stop` instead. Registered sources survive restarts.
 
-### Step 1.2: Register Internal & External Multi-Source Tables in Zetaris ✅ KEV, NVD DONE · ◐ claim file
+### Step 1.2: Register Internal & External Multi-Source Tables in Zetaris ✅ DONE (all 5 sources verified)
 > **Why this replaced the old DDL:** the previous version of this step used `CREATE TABLE` + `INSERT INTO ... VALUES`. Zetaris Lightning is a federation layer and does not document that for plain tables, so every source is now a **REST table (pointer to a URL) + view**. Run **one statement at a time**. Details in §3.3.
 
 #### 1.2a: `threatintel.kev_catalog` (External, real, live) ✅ DONE
@@ -262,7 +262,7 @@ SELECT * FROM threatintel.nvd_cve_4863;
 
 > NVD limits: only these 2 CVEs are registered (NIST rate-limits unauthenticated calls). If a claim cites a new CVE, add one more `nvd_<id>_raw` table + view and extend the `UNION ALL`.
 
-#### 1.2c: Claim file `claimfile.*` (Internal, SYNTHETIC) ◐ IN PROGRESS
+#### 1.2c: Claim file `claimfile.*` (Internal, SYNTHETIC) ✅ DONE
 The three internal tables are served as JSON from the team's **public** GitHub repo, using the same mechanism as KEV:
 1. Push `data/sample/{underwriting_policies,broker_incident_reports,forensic_auth_logs}.json` (shape `{"records":[...]}`) to the public repo. Confirm each raw URL (`https://raw.githubusercontent.com/<USER>/<REPO>/main/data/sample/<name>.json`) opens in a browser.
 2. Edit the endpoints in `scripts/register_zetaris_sources.sql` (replace `<GITHUB_USER>/<REPO>`), then run it **one statement at a time**: `CREATE LIGHTNING DATABASE CLAIMS_REST DESCRIBE BY "Simulated insurer claim file served as REST";`, `CREATE SCHEMASTORE CONTAINER claimfile;`, then for each table a `CREATE LIGHTNING REST TABLE <name>_raw ...` and a `CREATE SCHEMASTORE VIEW <name> WITH CONTAINER claimfile AS SELECT r.<col> AS <col>, ... FROM claims_rest.<name>_raw LATERAL VIEW explode(records) AS r;`.
@@ -305,52 +305,18 @@ WHERE b.claim_id = 'CLM-2026-101'
 
 ⬜ Still to test: the equivalent queries for CLM-2026-102 (should join cleanly) and CLM-2026-103 (`claimed_cve` is NULL, so the inner join returns **0 rows**; use `LEFT JOIN` from the broker table so the agent records "no external record" instead of getting nothing).
 
-### Step 1.5: Build the Python Zetaris Connector (`agent/tools_zetaris.py`) ⬜ TODO
-Write this module so Member 2's agents can execute governed SQL queries over Zetaris's REST API. **Unverified:** the exact headers and response keys (`columns`/`schema`, `data`) below come from this guide, not from Zetaris docs; the official `smoke_test.py` (check 2, "Zetaris runs SQL over its REST API") is authoritative. Test it with a `SELECT` on `threatintel.kev_catalog` first, keep the return shape unchanged (the UI shows `sql_executed` and `zetaris_request_id` as receipts), and send **one statement per call**. Add the `SAMPLE_MODE` fallback from Step 1.3:
+### Step 1.5: Build the Python Zetaris Connector (`agent/tools_zetaris.py`) ◐ WRITTEN, run the live self-test
+The module is in `agent/tools_zetaris.py` (plus an empty `agent/__init__.py`). It is built on **Zetaris's official client** (`zetaris/getting-started`, `scripts/zetaris_sql.py`), which corrected this guide's earlier draft: the request field is `"source": "SqlEditor"` (capital S and E), and the rows come back under the reply's `"data"` key.
 
-```python
-# agent/tools_zetaris.py
-import os
-import uuid
-import requests
-from dotenv import load_dotenv
+**Verified request contract:** `POST {ZETARIS_REST_URL}/sql-editor/sqls/run` with headers `Authorization: Bearer <key>`, `X-Org-ID`, `X-Request-ID`, `Content-Type: application/json` and body `{"queryId": <uuid>, "sql": <one statement>, "source": "SqlEditor", "limit": <n>}`.
 
-load_dotenv()
+**Return shape (do not change; the UI shows `sql_executed` and `zetaris_request_id` as evidence receipts):** `{sql_executed, zetaris_request_id, columns, rows, records, row_count, elapsed_ms, source}`, where `rows` are exactly what Zetaris returned and `records` is a list of dicts when column names are available. Column names are **not documented** in the reply, so the code tries `columns`/`schema`/`header`/`fields`; the self-test prints what Zetaris actually sends.
 
-def run_sql(sql_query: str, limit: int = 50) -> dict:
-    """
-    Executes a single SQL statement against Zetaris REST API (/sql-editor/sqls/run)
-    and returns structured rows + query provenance metadata for Track 2 explainability.
-    """
-    clean_sql = sql_query.strip().rstrip(";")
-    rest_url = os.environ["ZETARIS_REST_URL"].rstrip("/") + "/sql-editor/sqls/run"
-    request_id = str(uuid.uuid4())
-    query_id = str(uuid.uuid4())
-
-    headers = {
-        "Authorization": f"Bearer {os.environ['ZETARIS_API_KEY']}",
-        "X-Org-ID": str(os.environ.get("ZETARIS_ORG_ID", "1")),
-        "X-Request-ID": request_id,
-        "Content-Type": "application/json",
-    }
-    payload = {
-        "queryId": query_id,
-        "sql": clean_sql,
-        "source": "sqlEditor",
-        "limit": limit,
-    }
-
-    response = requests.post(rest_url, headers=headers, json=payload, timeout=60)
-    response.raise_for_status()
-    body = response.json()
-
-    return {
-        "sql_executed": clean_sql,
-        "zetaris_request_id": request_id,
-        "columns": body.get("columns") or body.get("schema", []),
-        "rows": body.get("data", []),
-    }
+**Test it** (repo root, with `.env` containing `ZETARIS_API_KEY`; `pip install requests python-dotenv`):
+```bash
+python -m agent.tools_zetaris
 ```
+It runs 6 checks (KEV, NVD, the three claim tables, and the 3-source headline join) and prints `PASS`/`FAIL` per check. Errors raise `ZetarisError` with the HTTP status and message. One statement per call. The `SAMPLE_MODE` fallback is still TODO (Step 1.3).
 
 ---
 
@@ -604,8 +570,8 @@ Judges evaluate **Product & UX (10 pts)**, **Demo (15 pts)**, and **Traceability
 
 | Milestone | Member 1 (Data / Zetaris) | Member 2 (Agents / Meterless) | Member 3 (Power / UI / Demo) |
 | :--- | :--- | :--- | :--- |
-| **Phase 1: Environment & Smoke Test (Today)** | ✅ Install Docker & Zetaris, pass `./verify.sh`, PokéAPI check. ⬜ Confirm `ZETARIS_API_KEY` saved. | Set up free IDE, implement `World Model` & `H-MEM` prompts from `meterless.ai/engines.html`. | Install Nightshift, add free NVIDIA key, configure Nemotron lanes, run `smoke_test.py` (3 PASS). |
-| **Phase 2: Multi-Source Data & Core Wiring (Oct 24)** | ✅ KEV + NVD registered (`threatintel.*`). ◐ Claim file (`claimfile.*`) via JSON-REST script. ⬜ Build `seed_sql.py` with `SAMPLE_MODE` and `tools_zetaris.py`; send table names to M2/M3. | Build `meterless_state.py` with 3-pass World Model and 4-node agent loop (`graph.py`) with CISA KEV / NVD cross-check logic. | Build `agent/llm.py` and the Streamlit 2-pane UI shell (`app.py`) with 4-column contradiction layout. |
+| **Phase 1: Environment & Smoke Test (Today)** | ✅ Install Docker & Zetaris, pass `./verify.sh`, PokéAPI check, `ZETARIS_API_KEY` saved. | Set up free IDE, implement `World Model` & `H-MEM` prompts from `meterless.ai/engines.html`. | Install Nightshift, add free NVIDIA key, configure Nemotron lanes, run `smoke_test.py` (3 PASS). |
+| **Phase 2: Multi-Source Data & Core Wiring (Oct 24)** | ✅ KEV + NVD registered (`threatintel.*`). ✅ Claim file (`claimfile.*`) via JSON-REST script. ◐ `tools_zetaris.py` written, awaiting live self-test. ⬜ `seed_sql.py` with `SAMPLE_MODE`; send table names to M2/M3. | Build `meterless_state.py` with 3-pass World Model and 4-node agent loop (`graph.py`) with CISA KEV / NVD cross-check logic. | Build `agent/llm.py` and the Streamlit 2-pane UI shell (`app.py`) with 4-column contradiction layout. |
 | **Phase 3: Cross-Source Join & 3-Pass Loop (Oct 25)** | ✅ Headline 3-source join verified for CLM-101. ⬜ Test the Pass 1/2/3 queries for CLM-102 and CLM-103 (incl. `LEFT JOIN` for 103) through `run_sql()`. | Connect `graph.py` to live `tools_zetaris.py` and `llm.py`. Tune Critic prompt so 3-pass sequence (Pass 1 reject -> Pass 2 reject -> Pass 3 approve) fires reliably. | Connect Streamlit UI to `ClaimWorldModel` so the 3 passes, 4-column table, and federated SQL receipts render live. |
 | **Phase 4: Hardening & Proof Capture (Oct 26)** | Verify `seed_sql.py` runs with both live feeds and `SAMPLE_MODE=true`; complete `data/README.md` with source licenses. | Run Meterless Engine conformance checks and save execution traces for all 3 claim cases (`CLM-101`, `102`, `103`). | Build the Slide Deck, capture screenshots of Nightshift receipts proving NVIDIA Nemotron execution, and draft demo script. |
 | **Phase 5: Video & Submission (Oct 27, before 23:45 UTC)** | Audit repo for zero committed secrets (`.env.example` only) and verify clean README setup instructions with synthetic data disclosure. | Verify code comments clearly highlight where `World Model` and `H-MEM` live in the codebase. | Record the **1–4 minute Demo Video** and submit on HackOS at least 3 hours before the 23:45 UTC deadline. |
