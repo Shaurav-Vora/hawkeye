@@ -57,8 +57,8 @@ Did: <1 line>. Result: <pass/fail + key evidence>. Changed files: <list>. Next: 
 | Area | Status | Notes |
 |---|---|---|
 | Zetaris | 🟢 Running; SQL Editor works | Re-run `./verify.sh` once to tick M1-02 |
-| Zetaris tables | 🟡 2 of 5 | `threatintel.kev_catalog` ✅ and `threatintel.nvd_cves` ✅ verified live. 3 internal claim tables: JSON files + SQL script written, need public GitHub repo + running `register_zetaris_sources.sql` |
-| `tools_zetaris.py` | 🔴 Not written | Draft code is in the master guide §3 Step 1.5 |
+| Zetaris tables | 🟢 5 of 5 | All verified 2026-10-24: `threatintel.kev_catalog`, `threatintel.nvd_cves`, `claimfile.underwriting_policies` (3), `claimfile.broker_incident_reports` (3), `claimfile.forensic_auth_logs` (4) |
+| `tools_zetaris.py` | 🟡 Written + mock-tested | Run `python -m agent.tools_zetaris` against live Zetaris |
 | `seed_sql.py` / `SAMPLE_MODE` | 🔴 Not written | |
 | Meterless engines | 🔴 Not started | |
 | `graph.py` / state | 🔴 Not started | |
@@ -71,7 +71,7 @@ Did: <1 line>. Result: <pass/fail + key evidence>. Changed files: <list>. Next: 
 **Blockers:** none recorded.
 
 **Next action per member:**
-- **M1:** Create public GitHub repo, push `data/sample/*.json`, edit endpoints in `scripts/register_zetaris_sources.sql`, run it statement by statement, test headline join. Confirm `ZETARIS_API_KEY` (M1-05).
+- **M1:** Run `python -m agent.tools_zetaris` (needs `pip install requests python-dotenv`); then message M2/M3 the table names (§5); then `seed_sql.py` + `SAMPLE_MODE` (M1-15/16).
 - **M2:** Get the two engine prompts from `meterless.ai/engines.html` (IMPLEMENT: *Keep parallel agents in sync*, *Give my agent memory*).
 - **M3:** Install Nightshift, add NVIDIA key **inside Nightshift only**, pin Nemotron lanes, run `smoke_test.py`.
 
@@ -81,18 +81,18 @@ Did: <1 line>. Result: <pass/fail + key evidence>. Changed files: <list>. Next: 
 
 ### Member 1: Data & Zetaris
 - [x] **M1-01** Zetaris installed via official guide (done earlier by M1; WSL2 + Docker Desktop)
-- [x] **M1-02** Restart stack; `docker compose ps --all` shows `init` & `bootstrap` = `Exited (0)`; `./verify.sh` = 9/9
+- [ ] **M1-02** Restart stack; `docker compose ps --all` shows `init` & `bootstrap` = `Exited (0)`; `./verify.sh` = 9/9
 - [x] **M1-03** `SELECT 1 AS one;` works in Web UI SQL Editor (`http://localhost:3000`) (SQL Editor confirmed running queries 2026-10-24)
 - [x] **M1-04** PokéAPI check (reported done by M1): 4 statements from `getting-started/open_data/rest_apis/sql/non_rate_limited/02_pokeapi_create.sql` run one at a time
-- [x] **M1-05** `ZETARIS_API_KEY` generated in UI, put in team `.env` (not committed)
-- [ ] **M1-06** `claimfile.underwriting_policies` via JSON-REST (`data/sample/*.json` + `scripts/register_zetaris_sources.sql`; see §9)
-- [ ] **M1-07** Create + seed `broker_incident_reports` incl. `claimed_cve` (3 rows)
-- [ ] **M1-08** Create + seed `forensic_auth_logs` (4 rows)
+- [x] **M1-05** `ZETARIS_API_KEY` generated in UI and saved in local `.env` (confirmed by M1, 2026-10-24)
+- [x] **M1-06** `claimfile.underwriting_policies` verified: 3 rows (via JSON-REST, `scripts/register_zetaris_sources.sql`)
+- [x] **M1-07** `claimfile.broker_incident_reports` verified: 3 rows incl. `claimed_cve`
+- [x] **M1-08** `claimfile.forensic_auth_logs` verified: 4 rows
 - [x] **M1-09** `kev_catalog` created as REST table + view in container `threatintel`; verified 2026-10-24 (see §9)
 - [x] **M1-10** `threatintel.nvd_cves` live via REST; verified 2026-10-24 (both CVEs)
 - [x] **M1-11** Real CVE facts verified live: 46805 KEV 2024-01-10 Known, NVD pub 2024-01-12 8.2 HIGH CWE-287; 4863 KEV 2023-09-13 Unknown, NVD pub 2023-09-12 8.8 HIGH CWE-787. KEV⨝NVD join works
-- [x] **M1-12** Headline cross-source JOIN returns expected row for CLM-2026-101 (§5.4)
-- [ ] **M1-13** `agent/tools_zetaris.py` `run_sql()` works from Python and returns `sql_executed`, `zetaris_request_id`, `columns`, `rows`
+- [x] **M1-12** Headline 3-source JOIN verified for CLM-2026-101 (claim file + KEV + NVD)
+- [ ] **M1-13** `agent/tools_zetaris.py` `run_sql()`: code written + mock-tested 2026-10-24; tick after `python -m agent.tools_zetaris` prints ALL PASS against real Zetaris
 - [ ] **M1-14** Tell M2 the **exact** table/column names + any Zetaris datasource prefix (record in §5)
 - [ ] **M1-15** `seed_sql.py`: one command loads all 5 tables; live mode and `SAMPLE_MODE=true` both tested
 - [ ] **M1-16** `data/sample/*` committed (small) + `data/README.md` (URLs, licence, registration steps, limitations)
@@ -207,8 +207,8 @@ WHERE b.claim_id = 'CLM-2026-101';
 ```
 
 ### 5.5 `run_sql()` contract (do not change the return shape; the UI shows these as "receipts")
-`run_sql(sql: str, limit: int = 50) -> {"sql_executed", "zetaris_request_id", "columns", "rows"}`
-Endpoint: `POST {ZETARIS_REST_URL}/sql-editor/sqls/run`, headers `Authorization: Bearer <ZETARIS_API_KEY>`, `X-Org-ID`, `X-Request-ID`; body `{queryId, sql, source:"sqlEditor", limit}`. One statement per call, trailing `;` stripped. `UNVERIFIED:` exact response keys (`columns` vs `schema`, `data`): confirm against the official `smoke_test.py`, which is authoritative.
+`run_sql(sql: str, limit: int = 50) -> {"sql_executed", "zetaris_request_id", "columns", "rows", "records", "row_count", "elapsed_ms", "source"}` (code in `agent/tools_zetaris.py`; `records` = list of dicts when column names are known)
+Endpoint: `POST {ZETARIS_REST_URL}/sql-editor/sqls/run`, headers `Authorization: Bearer <ZETARIS_API_KEY>`, `X-Org-ID`, `X-Request-ID`; body `{queryId, sql, source:"SqlEditor", limit}` (**capital S and E**, verified from Zetaris's official client `scripts/zetaris_sql.py`; reply rows are under `data`). One statement per call, trailing `;` stripped. Column-name key in the reply is undocumented (`columns`/`schema`/...); the self-test prints the real reply keys. **Fill in here once seen:** `UNVERIFIED`.
 
 ---
 
@@ -281,7 +281,10 @@ Endpoint: `POST {ZETARIS_REST_URL}/sql-editor/sqls/run`, headers `Authorization:
 - 2026-10-24: **Internal claim tables now primary = JSON-over-REST** (same proven mechanism as KEV/NVD): `data/sample/{underwriting_policies,broker_incident_reports,forensic_auth_logs}.json` shaped `{"records":[...]}`, registered as `claims_rest.<name>_raw` and flattened to `claimfile.<name>` by `scripts/register_zetaris_sources.sql`. Needs a PUBLIC repo (raw.githubusercontent.com). Postgres + JDBC (`data/sql/claims_seed.sql`) is OPTIONAL stretch only. README must say claim file is simulated.
 - 2026-10-24: Prefixes: internal = `claimfile.*`, external = `threatintel.*`.
 
+- 2026-10-24: `tools_zetaris.py` built from Zetaris's official client; the master guide's old draft had `source:"sqlEditor"` (wrong case). Zetaris's own scripts read `.env.local`; ours reads `.env` via python-dotenv.
+
 **Gotchas**
+- `DESCRIBE BY` text allows only letters, digits, `_ . - ,` and spaces. No parentheses or other punctuation (error: "Description is invalid").
 - Zetaris may require `<datasource>.<table>` names (`UNVERIFIED`).
 - The Zetaris SQL guide's `UPSERT AUTH` example contains credential-looking text; do not copy that pattern.
 - REST 401 → regenerate API key in UI.
@@ -292,7 +295,7 @@ Endpoint: `POST {ZETARIS_REST_URL}/sql-editor/sqls/run`, headers `Authorization:
 
 **Open questions**
 - **OQ-1:** For CLM-103 (`claimed_cve = NULL`), should Pass 3 run and return 0 rows ("no external record") or be skipped? Current Critic Check 2 wouldn't trigger. Proposed: run Pass 3 anyway, record "no external record" as evidence, branch on the EventID 1102 finding. *Owner: M2. Resolve and record here.*
-- **OQ-2:** Does the Zetaris JOIN between `claims_pg.*` (JDBC) and `threatintel.kev_catalog` (REST view) work as-is? Test as soon as claims_pg is registered. If not, both sides must live in Zetaris tables (script-load fallback). *Owner: M1.*
+- ~~**OQ-2:**~~ **RESOLVED 2026-10-24:** the 3-way JOIN across `claimfile.*` (REST/GitHub) and `threatintel.*` (REST/CISA, NIST) works in Zetaris as-is (headline query verified).
 
 ---
 
@@ -327,6 +330,9 @@ Did: User verified NVD live (both CVEs) and KEV⨝NVD join. Generated claim-file
 
 ### 2026-10-24 16:00 | M1 | AI session 2
 Did: Found real Zetaris REST syntax; KEV registered as `threatintel.kev_catalog`, user confirmed rows for CVE-2023-46805/4863. Researched internal-table options: plain INSERT unsupported in docs, so planned Postgres+JDBC; wrote `data/sql/claims_seed.sql`. Changed files: AGENTS.md, data/sql/claims_seed.sql. Next: M1 starts claimsdb + registers claims_pg; then NVD REST tables. Blockers: JDBC path unverified by Zetaris.
+
+### 2026-10-24 20:00 | M1 | AI session 4
+Did: M1 verified all 5 sources + API key. Wrote `agent/tools_zetaris.py` + `agent/__init__.py` from Zetaris's official client; mock-server tested (ok, 400, 401, missing key, empty, unreachable). Updated guide statuses. Next: M1 runs `python -m agent.tools_zetaris` live. Blockers: none
 
 **Archive digest** (older entries folded here; max 15 lines)
 - _(empty)_
