@@ -12,11 +12,11 @@ APP_HEADERS = {"meterless-app": "cyber-claims-explainer", "meterless-scope": "us
 
 
 def _base_url() -> str:
-    return (os.environ.get("METERLESS_BASE_URL") or os.environ["MODEL_BASE_URL"]).rstrip("/")
+    return (os.environ.get("METERLESS_BASE_URL") or os.environ.get("MODEL_BASE_URL", "http://127.0.0.1:8088/v1")).rstrip("/")
 
 
 def _token() -> str:
-    return os.environ.get("METERLESS_RUNTIME_TOKEN") or os.environ["MODEL_API_KEY"]
+    return os.environ.get("METERLESS_RUNTIME_TOKEN") or os.environ.get("MODEL_API_KEY", "")
 
 
 def llm_configured() -> bool:
@@ -44,7 +44,7 @@ def discover_models() -> list:
 def call_nemotron(system_prompt: str, user_prompt: str, temperature: float = 0.1) -> str:
     """Call NVIDIA Nemotron through Meterless Nightshift."""
     client = get_meterless_client()
-    model_id = os.environ.get("NEMOTRON_MODEL") or os.environ.get("METERLESS_MODEL", "meterless/auto")
+    model_id = os.environ.get("NEMOTRON_MODEL") or os.environ.get("METERLESS_MODEL", "nvidia/nemotron-3.5-lightning-30b-a3b")
     response = client.chat.completions.create(
         model=model_id,
         temperature=temperature,
@@ -54,3 +54,16 @@ def call_nemotron(system_prompt: str, user_prompt: str, temperature: float = 0.1
         ],
     )
     return response.choices[0].message.content or ""
+
+
+if __name__ == "__main__":
+    # Quick sanity check (M3 smoke test entry point)
+    print("Testing connection to Nightshift & Nemotron...")
+    try:
+        reply = call_nemotron(
+            system_prompt="You are a helpful assistant.",
+            user_prompt="Reply with the single word: READY"
+        )
+        print(f"Success! Model reply: {reply}")
+    except Exception as e:
+        print(f"Error testing connection: {e}")
