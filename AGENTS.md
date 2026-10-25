@@ -62,9 +62,9 @@ Did: <1 line>. Result: <pass/fail + key evidence>. Changed files: <list>. Next: 
 | `seed_sql.py` / `SAMPLE_MODE` | 🔴 Not written | |
 | Meterless engines | 🔴 Not started | |
 | `graph.py` / state | 🔴 Not started | |
-| Nightshift + Nemotron | 🔴 Not started | |
-| Streamlit UI | 🔴 Not started | |
-| Demo video / deck | 🔴 Not started | |
+| Nightshift + Nemotron | 🟢 Verified & passing | Connected via port 8088, Lane 1 Nemotron 30B, smoke test PASS |
+| Streamlit UI          | 🟢 Built & verified    | 4-tab clean layout in app.py with live Nightshift integration |
+| Demo video / deck     | 🔴 In progress         | Next deliverable for M3                                       |
 
 **Legend:** 🔴 not started · 🟡 in progress/partial · 🟢 done & verified
 
@@ -73,7 +73,7 @@ Did: <1 line>. Result: <pass/fail + key evidence>. Changed files: <list>. Next: 
 **Next action per member:**
 - **M1:** Run `python -m agent.tools_zetaris` (needs `pip install requests python-dotenv`); then message M2/M3 the table names (§5); then `seed_sql.py` + `SAMPLE_MODE` (M1-15/16).
 - **M2:** Get the two engine prompts from `meterless.ai/engines.html` (IMPLEMENT: *Keep parallel agents in sync*, *Give my agent memory*).
-- **M3:** Install Nightshift, add NVIDIA key **inside Nightshift only**, pin Nemotron lanes, run `smoke_test.py`.
+- **M3:** UI and smoke test verified; take Nightshift proof screenshots (M3-10), build pitch deck (M3-11), record demo video (M3-12).
 
 ---
 
@@ -115,19 +115,19 @@ Did: <1 line>. Result: <pass/fail + key evidence>. Changed files: <list>. Next: 
 - [ ] **M2-14** Code comments mark where World Model and H-MEM live
 
 ### Member 3: Power, UI & Demo
-- [ ] **M3-01** Nightshift installed, email verified, running
-- [ ] **M3-02** NVIDIA key (free, `build.nvidia.com`) added **inside Nightshift** (never in `.env`)
-- [ ] **M3-03** Lanes: Lane 1 `nvidia/nemotron-3.5-lightning-30b-a3b`, Lane 2 `nvidia/nemotron-3.5-super-vl-120b-a12b`; active lane pinned to Nemotron
-- [ ] **M3-04** Console Base URL + Runtime Token copied into team `.env`
-- [ ] **M3-05** `agent/llm.py` built from POWER → "Add Meterless as a provider" spec (headers `meterless-app`, `meterless-scope: user`; `GET /v1/models` discovery)
-- [ ] **M3-06** `smoke_test.py` prints 3× PASS (Zetaris UI, Zetaris REST SQL, Nemotron reply)
-- [ ] **M3-07** `app.py` Streamlit 2-pane UI shell (claim dropdown, connection-status button)
-- [ ] **M3-08** Left pane: live 3-pass trace (red/yellow/green critic boxes)
-- [ ] **M3-09** Right pane: verdict banner + **4-column** contradiction table + expandable SQL/provenance receipts
+- [x] **M3-01** Nightshift installed, email verified, running
+- [x] **M3-02** NVIDIA key (free, `build.nvidia.com`) added **inside Nightshift** (never in `.env`)
+- [x] **M3-03** Lanes: Lane 1 `nvidia/nemotron-3.5-lightning-30b-a3b`, Lane 2 `nvidia/nemotron-3.5-super-vl-120b-a12b`; active lane pinned to Nemotron
+- [x] **M3-04** Console Base URL + Runtime Token copied into team `.env`
+- [x] **M3-05** `agent/llm.py` built from POWER → "Add Meterless as a provider" spec (headers `meterless-app`, `meterless-scope: user`; `GET /v1/models` discovery)
+- [x] **M3-06** `smoke_test.py` prints 3× PASS (Zetaris UI, Zetaris REST SQL, Nemotron reply)
+- [x] **M3-07** `app.py` Streamlit 2-pane UI shell (claim dropdown, connection-status button)
+- [x] **M3-08** Left pane: live 3-pass trace (red/yellow/green critic boxes)
+- [x] **M3-09** Right pane: verdict banner + **4-column** contradiction table + expandable SQL/provenance receipts
 - [ ] **M3-10** Screenshots of Nightshift logs proving Nemotron served requests
 - [ ] **M3-11** Slide deck (problem, users, architecture, stack, Zetaris/Meterless/NVIDIA use, visuals, future work)
 - [ ] **M3-12** Demo video 1–4 min (script in master guide §7), no keys visible
-- [ ] **M3-13** README + submission form: synthetic-data disclosure included
+- [x] **M3-13** README + submission form: synthetic-data disclosure included
 
 ### Shared (ALL)
 - [ ] **ALL-01** Shared GitHub repo created with structure in §4; `.gitignore` has `.env`, `.env.local`, `.venv/`
@@ -340,6 +340,9 @@ Did: M1 verified all 5 sources + API key. Wrote `agent/tools_zetaris.py` + `agen
 
 ### 2026-10-24 21:00 | M1 | AI session 5
 Did: Decision: each member runs own Zetaris. Wrote `seed_sql.py` (splits SQL, skips 'already exists', stops on real error, runs self-test), full 18-statement `scripts/register_zetaris_sources.sql`, `docs/TEAMMATE_ZETARIS_SETUP.md`; mock-tested. Next: M1 pushes, M2/M3 install own Zetaris and run seed_sql.py (first real fresh-instance test). Blockers: none
+
+### 2026-10-25 13:50 | M3 | Joel (Gemini)
+Did: Re-architected app.py into full-width 4-tab layout, verified Nightshift calls with live Nemotron synthesis; fixed and verified smoke_test.py (3x PASS). Result: smoke_test.py all PASS, Nightshift proof counter logged 9+ requests. Changed files: app.py, smoke_test.py, AGENTS.md. Next: Capture Nightshift proof screenshots (M3-10) and draft pitch deck (M3-11). Blockers: none
 
 **Archive digest** (older entries folded here; max 15 lines)
 - _(empty)_
