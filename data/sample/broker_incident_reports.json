@@ -1,0 +1,28 @@
+{
+ "records": [
+  {
+   "claim_id": "CLM-2026-101",
+   "submitted_by": "Marsh Cyber Claims Broker",
+   "reported_breach_timestamp": "2026-10-14T02:14:00Z",
+   "claimed_root_cause": "Zero-Day VPN Appliance Exploit",
+   "claimed_cve": "CVE-2023-46805",
+   "narrative_summary": "On Oct 14 at 02:14 UTC, threat actors bypassed perimeter defenses using an unpreventable zero-day exploit on the hospital Ivanti Connect Secure VPN concentrator (CVE-2023-46805). All MFA warranties and backup controls were fully active at the time of intrusion."
+  },
+  {
+   "claim_id": "CLM-2026-102",
+   "submitted_by": "Aon Incident Response Team",
+   "reported_breach_timestamp": "2026-10-15T11:30:00Z",
+   "claimed_root_cause": "Session Token Phishing / Browser Exploit",
+   "claimed_cve": "CVE-2023-4863",
+   "narrative_summary": "On Oct 15 at 11:30 UTC, attackers compromised an endpoint via a browser WebP exploit (CVE-2023-4863) after the user completed a valid MFA push challenge. Immutable backups remained intact and were used to restore operations."
+  },
+  {
+   "claim_id": "CLM-2026-103",
+   "submitted_by": "Willis Claims Advisory",
+   "reported_breach_timestamp": "2026-10-16T04:00:00Z",
+   "claimed_root_cause": "Unknown Perimeter Breach",
+   "claimed_cve": null,
+   "narrative_summary": "Ransomware detonation occurred on Oct 16 at 04:00 UTC. The insured states all MFA policies were active, though some domain controller logs from the preceding evening were unavailable due to storage rotation."
+  }
+ ]
+}

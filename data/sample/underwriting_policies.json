@@ -1,0 +1,37 @@
+{
+ "records": [
+  {
+   "claim_id": "CLM-2026-101",
+   "policy_id": "POL-CYB-901",
+   "insured_company": "Apex Regional Hospital",
+   "claim_amount_usd": 1400000,
+   "policy_effective_date": "2026-01-01",
+   "warranty_mfa_all_remote": true,
+   "warranty_mfa_service_accts": true,
+   "warranty_immutable_backups": true,
+   "signed_attestation_text": "Applicant attests 100% MFA enforcement on all VPN, RDP, and privileged service accounts with zero legacy exceptions."
+  },
+  {
+   "claim_id": "CLM-2026-102",
+   "policy_id": "POL-CYB-902",
+   "insured_company": "Nexus Global Logistics",
+   "claim_amount_usd": 850000,
+   "policy_effective_date": "2026-02-15",
+   "warranty_mfa_all_remote": true,
+   "warranty_mfa_service_accts": true,
+   "warranty_immutable_backups": true,
+   "signed_attestation_text": "Applicant attests 100% MFA enforcement via Okta Verify and immutable S3 Object Lock on all daily backups."
+  },
+  {
+   "claim_id": "CLM-2026-103",
+   "policy_id": "POL-CYB-903",
+   "insured_company": "Vanguard Retail Group",
+   "claim_amount_usd": 2100000,
+   "policy_effective_date": "2026-03-01",
+   "warranty_mfa_all_remote": true,
+   "warranty_mfa_service_accts": true,
+   "warranty_immutable_backups": true,
+   "signed_attestation_text": "Applicant attests 100% MFA enforcement and continuous 90-day SIEM authentication log retention."
+  }
+ ]
+}

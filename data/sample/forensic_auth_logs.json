@@ -1,0 +1,52 @@
+{
+ "records": [
+  {
+   "log_id": "LOG-99410",
+   "claim_id": "CLM-2026-101",
+   "event_timestamp": "2026-10-13T08:02:11Z",
+   "username": "svc_backup_admin",
+   "account_type": "PRIVILEGED_SERVICE_ACCT",
+   "source_ip": "185.220.101.44",
+   "auth_method": "PASSWORD_ONLY",
+   "mfa_status": "MFA_BYPASS_LEGACY_EXCEPTION",
+   "backup_immutable_lock": "DISABLED_BY_ADMIN",
+   "raw_event_note": "Successful VPN RDP login 18 hours prior to claimed zero-day. Account matched rule: BYPASS_MFA_LEGACY_SVC created 2026-04-10."
+  },
+  {
+   "log_id": "LOG-99411",
+   "claim_id": "CLM-2026-101",
+   "event_timestamp": "2026-10-14T02:14:05Z",
+   "username": "svc_backup_admin",
+   "account_type": "PRIVILEGED_SERVICE_ACCT",
+   "source_ip": "10.20.1.5",
+   "auth_method": "INTERNAL_KERBEROS",
+   "mfa_status": "MFA_BYPASS_LEGACY_EXCEPTION",
+   "backup_immutable_lock": "DISABLED_BY_ADMIN",
+   "raw_event_note": "Lateral movement to Domain Controller and shadow copy deletion."
+  },
+  {
+   "log_id": "LOG-88201",
+   "claim_id": "CLM-2026-102",
+   "event_timestamp": "2026-10-15T11:28:40Z",
+   "username": "j.miller@nexus.com",
+   "account_type": "STANDARD_USER",
+   "source_ip": "91.198.174.192",
+   "auth_method": "OKTA_PUSH_VERIFIED",
+   "mfa_status": "MFA_ENFORCED_PASSED",
+   "backup_immutable_lock": "OBJECT_LOCK_ACTIVE",
+   "raw_event_note": "Valid MFA challenge completed; post-auth browser exploit CVE-2023-4863 triggered payload. Immutable backup vault blocked encryption."
+  },
+  {
+   "log_id": "LOG-77105",
+   "claim_id": "CLM-2026-103",
+   "event_timestamp": "2026-10-15T21:45:00Z",
+   "username": "SYSTEM_AUDIT",
+   "account_type": "DOMAIN_CONTROLLER",
+   "source_ip": "10.0.0.1",
+   "auth_method": "EVENT_LOG_SERVICE",
+   "mfa_status": "UNKNOWN_LOG_GAP",
+   "backup_immutable_lock": "OBJECT_LOCK_ACTIVE",
+   "raw_event_note": "Windows Security EventID 1102: The audit log was cleared by user Administrator. 6-hour telemetry blackout between 21:45 UTC and 04:00 UTC detonation."
+  }
+ ]
+}
