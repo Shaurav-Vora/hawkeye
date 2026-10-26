@@ -6,7 +6,7 @@ import requests
 from dotenv import load_dotenv
 from openai import OpenAI
 
-load_dotenv()
+load_dotenv(override=True)
 
 APP_HEADERS = {"meterless-app": "cyber-claims-explainer", "meterless-scope": "user"}
 

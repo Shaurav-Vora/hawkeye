@@ -52,7 +52,7 @@ Did: <1 line>. Result: <pass/fail + key evidence>. Changed files: <list>. Next: 
 
 ## 2. Current State (REWRITE IN PLACE; do not append)
 
-**Last updated:** 2026-10-25 15:00 UTC · **By:** M1 AI session (Antigravity)
+**Last updated:** 2026-10-26 06:10 UTC · **By:** Antigravity (AI session)
 
 | Area | Status | Notes |
 |---|---|---|
@@ -63,7 +63,7 @@ Did: <1 line>. Result: <pass/fail + key evidence>. Changed files: <list>. Next: 
 | Meterless engines | 🟢 World Model + H-MEM | Implemented, conformance test 23/23 PASS |
 | `graph.py` / state | 🟢 Full 3-pass loop live | All 3 claims → correct verdict with live Zetaris + live Nemotron 2026-10-25 |
 | Nightshift + Nemotron | 🟢 Verified & passing | Port 8088, Nemotron 30B, smoke test PASS with live token |
-| Streamlit UI | 🟢 Built & live | 4-tab layout; RUN INVESTIGATION calls live Nemotron |
+| Streamlit UI | 🟢 Fully live-wired | `app.py` runs full `run_claim()` multi-agent loop, renders live ClaimWorldModel in all 4 tabs |
 | Integration branch | 🟢 Pushed | `integration/m1-m2-merge` has all M1+M2+M3 code; PR to main pending |
 | Demo video / deck | 🔴 Not started | M3 owns |
 
@@ -142,28 +142,50 @@ Did: <1 line>. Result: <pass/fail + key evidence>. Changed files: <list>. Next: 
 
 ---
 
-## 4. Repo Map (what each file is for)
+## 4. Repo Map & File Summaries
 
 ```
-open-agent-hack/
-├── AGENTS.md                 # THIS FILE (keep updated)
-├── .env.example              # placeholders only (committed)
-├── .gitignore                # must ignore .env, .env.local, .venv/
-├── README.md                 # setup, architecture, sponsor write-up, synthetic-data disclosure
-├── requirements.txt          # openai, python-dotenv, requests, langgraph, streamlit, pydantic
-├── smoke_test.py             # official 3-check verification script
-├── seed_sql.py               # downloads/filters KEV + NVD, loads all 5 tables; SAMPLE_MODE fallback
-├── data/README.md            # source URLs, licences, Zetaris registration steps
-├── data/sample/              # small offline fallback: 3 internal CSVs + cisa_kev_sample.json + nvd_cve_sample.json
-├── agent/llm.py              # Nightshift OpenAI-compatible client + model discovery (M3)
-├── agent/tools_zetaris.py    # run_sql() → Zetaris REST (M1)
-├── agent/meterless_state.py  # ClaimWorldModel + H-MEM store (M2)
-├── agent/graph.py            # multi-agent orchestration (M2)
-├── agent/prompts.py          # role prompts (M2)
-├── app.py                    # Streamlit 2-pane UI (M3)
-├── input_examples/ output_examples/
+hawkeye/
+├── AGENTS.md                 # Living team context, architecture, task checklist & session log
+├── .env.example              # Environment placeholders (committed template)
+├── .gitignore                # Ignores .env, .venv/, IDE files, Docker volumes
+├── README.md                 # Project architecture, demo script, synthetic data disclosure
+├── requirements.txt          # Python dependencies (openai, streamlit, langgraph, pydantic, etc.)
+├── smoke_test.py             # Official 3-check verification script (Zetaris UI, REST, Nemotron)
+├── seed_sql.py               # Idempotent 18-statement Zetaris federated table bootstrapper
+├── app.py                    # Streamlit cockpit UI with live ClaimWorldModel 4-tab rendering
+├── hmem_precedents.json      # Persistent H-MEM precedent memory store
+├── scripts/
+│   └── register_zetaris_sources.sql  # SQL DDL for databases, schemastore containers & views
+├── data/sample/              # Bundled datasets (3 internal claims JSONs + KEV/NVD sample caches)
+└── agent/
+    ├── graph.py              # Multi-agent LangGraph engine (Planner -> Specialist <-> Critic -> Reporter)
+    ├── meterless_state.py    # Meterless World Model (ClaimWorldModel) + H-MEM store (MeterlessHMemStore)
+    ├── tools_zetaris.py      # Zetaris REST SQL connector with UUID receipts & latency logging
+    ├── llm.py                # Meterless Nightshift OpenAI client routed to NVIDIA Nemotron
+    ├── prompts.py            # Prompt engineering and role instructions for all 4 agents
+    ├── sample_backend.py     # Offline fallback engine parsing data/sample/ when Zetaris is offline
+    └── conformance_test.py   # Conformance test suite verifying World Model & H-MEM invariants
 ```
-Mark a file as built by editing its row in §2, not here.
+
+### File Purposes & Responsibilities
+
+| File | Layer / Member | Purpose & Key Responsibilities |
+|---|---|---|
+| [`app.py`](file:///c:/dev/hawkeye/app.py) | UI / M3 | Streamlit adjudication cockpit. Provides 4 tabs (Overview, 3-Pass Agent Trace, Verdict & Contradiction Matrix, SQL Receipts). Invokes `run_claim()` dynamically on click. |
+| [`smoke_test.py`](file:///c:/dev/hawkeye/smoke_test.py) | Verif / M3 | Official pre-submission test verifying: 1) Zetaris web UI (3000), 2) Zetaris REST API (8888), 3) Nightshift + Nemotron (8088). |
+| [`seed_sql.py`](file:///c:/dev/hawkeye/seed_sql.py) | Data / M1 | Automatically provisions all 5 federated tables into Zetaris via REST API. Skips existing tables idempotently and handles error reporting. |
+| [`agent/graph.py`](file:///c:/dev/hawkeye/agent/graph.py) | Build / M2 | Core multi-agent state machine. Implements Planner → Specialist ⇄ Critic → Risk Reporter. Enforces bounded passes, rule-based branching, and dossier generation. |
+| [`agent/meterless_state.py`](file:///c:/dev/hawkeye/agent/meterless_state.py) | Build / M2 | Sponsor engine implementations: `ClaimWorldModel` (shared state across agents without lost updates) and `MeterlessHMemStore` (cross-claim precedent memory). |
+| [`agent/tools_zetaris.py`](file:///c:/dev/hawkeye/agent/tools_zetaris.py) | Data / M1 | Zetaris REST SQL client implementing `run_sql()`. Tracks statement provenance, request UUIDs, row counts, and millisecond latency for SQL receipts. |
+| [`agent/llm.py`](file:///c:/dev/hawkeye/agent/llm.py) | Power / M3 | Nightshift provider client. Configures OpenAI SDK to local port 8088 with custom `meterless-app` headers and model discovery, calling NVIDIA Nemotron. |
+| [`agent/prompts.py`](file:///c:/dev/hawkeye/agent/prompts.py) | Build / M2 | System prompts for Planner (hypotheses), Specialist (queries), Critic (rigorous scrutiny), and Risk Reporter (executive synthesis). |
+| [`agent/sample_backend.py`](file:///c:/dev/hawkeye/agent/sample_backend.py) | Data / M1 | Offline evaluation backend. Executes SQL against bundled JSON files when `SAMPLE_MODE=true` or during offline judging environments. |
+| [`agent/conformance_test.py`](file:///c:/dev/hawkeye/agent/conformance_test.py) | Build / M2 | 23-test conformance suite verifying state immutability, precedent storage, contradiction linking, and branch rules. |
+| [`scripts/register_zetaris_sources.sql`](file:///c:/dev/hawkeye/scripts/register_zetaris_sources.sql) | Data / M1 | Raw Zetaris SQL DDL creating databases, schemastore containers, REST endpoints, and views (`threatintel.*`, `claimfile.*`). |
+| [`hmem_precedents.json`](file:///c:/dev/hawkeye/hmem_precedents.json) | Build / M2 | JSON storage containing prior claim warranty rulings loaded by Planner on new claim runs to ensure institutional memory. |
+| [`data/sample/*.json`](file:///c:/dev/hawkeye/data/sample/) | Data / M1 | Ground-truth datasets: `underwriting_policies.json`, `broker_incident_reports.json`, `forensic_auth_logs.json`, and CISA KEV/NVD samples. |
+
 
 ---
 
@@ -298,6 +320,8 @@ Endpoint: `POST {ZETARIS_REST_URL}/sql-editor/sqls/run`, headers `Authorization:
 - If Zetaris container can't reach `host.docker.internal:5433`, attach claimsdb to Zetaris's compose network (`docker network connect <zetaris_net> claimsdb`) and use `jdbc:postgresql://claimsdb:5432/claims`.
 - KEV JSON also has a `forensicTriage` field and `cwes` array (not in our view).
 
+- Zetaris REST SQL can return numeric values (e.g. `claim_amount_usd`) as strings (e.g. `"1400000"`); always parse safely with `int(float(clean))` before applying comma formatting like `f"${amt:,}"`.
+
 **Open questions**
 - **OQ-1:** For CLM-103 (`claimed_cve = NULL`), should Pass 3 run and return 0 rows ("no external record") or be skipped? Current Critic Check 2 wouldn't trigger. Proposed: run Pass 3 anyway, record "no external record" as evidence, branch on the EventID 1102 finding. *Owner: M2. Resolve and record here.*
 - ~~**OQ-2:**~~ **RESOLVED 2026-10-24:** the 3-way JOIN across `claimfile.*` (REST/GitHub) and `threatintel.*` (REST/CISA, NIST) works in Zetaris as-is (headline query verified).
@@ -327,14 +351,11 @@ streamlit run app.py
 
 ## 11. Session Log (append-only; keep last 8 verbatim, compress older → digest)
 
-### 2026-10-24 00:00 | ALL | initial author
-Did: Created AGENTS.md from the master execution guide (hybrid internal+external data design). Result: no code built yet. Changed files: AGENTS.md. Next: M1 restart Zetaris + verify; M2/M3 start in parallel. Blockers: none
+### 2026-10-24 16:00 | M1 | AI session 2
+Did: Found real Zetaris REST syntax; KEV registered as `threatintel.kev_catalog`, user confirmed rows for CVE-2023-46805/4863. Researched internal-table options: plain INSERT unsupported in docs, so planned Postgres+JDBC; wrote `data/sql/claims_seed.sql`. Changed files: AGENTS.md, data/sql/claims_seed.sql. Next: M1 starts claimsdb + registers claims_pg; then NVD REST tables. Blockers: JDBC path unverified by Zetaris.
 
 ### 2026-10-24 18:00 | M1 | AI session 3
 Did: User verified NVD live (both CVEs) and KEV⨝NVD join. Generated claim-file JSONs + `scripts/register_zetaris_sources.sql` (JSON-REST route). Changed files: AGENTS.md, data/sample/*.json, scripts/register_zetaris_sources.sql. Next: M1 pushes repo, runs script, tests 3-source join. Blockers: needs public repo URL.
-
-### 2026-10-24 16:00 | M1 | AI session 2
-Did: Found real Zetaris REST syntax; KEV registered as `threatintel.kev_catalog`, user confirmed rows for CVE-2023-46805/4863. Researched internal-table options: plain INSERT unsupported in docs, so planned Postgres+JDBC; wrote `data/sql/claims_seed.sql`. Changed files: AGENTS.md, data/sql/claims_seed.sql. Next: M1 starts claimsdb + registers claims_pg; then NVD REST tables. Blockers: JDBC path unverified by Zetaris.
 
 ### 2026-10-24 20:00 | M1 | AI session 4
 Did: M1 verified all 5 sources + API key. Wrote `agent/tools_zetaris.py` + `agent/__init__.py` from Zetaris's official client; mock-server tested (ok, 400, 401, missing key, empty, unreachable). Updated guide statuses. Next: M1 runs `python -m agent.tools_zetaris` live. Blockers: none
@@ -342,11 +363,18 @@ Did: M1 verified all 5 sources + API key. Wrote `agent/tools_zetaris.py` + `agen
 ### 2026-10-24 21:00 | M1 | AI session 5
 Did: Decision: each member runs own Zetaris. Wrote `seed_sql.py` (splits SQL, skips 'already exists', stops on real error, runs self-test), full 18-statement `scripts/register_zetaris_sources.sql`, `docs/TEAMMATE_ZETARIS_SETUP.md`; mock-tested. Next: M1 pushes, M2/M3 install own Zetaris and run seed_sql.py (first real fresh-instance test). Blockers: none
 
-### 2026-10-25 13:50 | M3 | Joel (Gemini)
-Did: Re-architected app.py into full-width 4-tab layout, verified Nightshift calls with live Nemotron synthesis; fixed and verified smoke_test.py (3x PASS). Result: smoke_test.py all PASS, Nightshift proof counter logged 9+ requests. Changed files: app.py, smoke_test.py, AGENTS.md. Next: Capture Nightshift proof screenshots (M3-10) and draft pitch deck (M3-11). Blockers: none
-
 ### 2026-10-25 12:00 UTC | M1 | Antigravity (AI session 6)
 Did: Created branch `member-1-data-zetaris`; pulled all remote branches; merged M2+M3 into `integration/m1-m2-merge` (resolved llm.py conflict, kept M2 arch + M3 __main__); ran conformance 23/23 PASS; installed Nightshift + Nemotron live; smoke_test 3x PASS; `python -m agent.tools_zetaris` ALL PASS live; `python -m agent.graph --all` → correct verdicts for all 3 claims with live Zetaris+Nemotron. Result: PASS. Changed files: AGENTS.md. Next: PR integration→main; M2-13 traces; M3 screenshots+deck+video. Blockers: none
 
+### 2026-10-25 13:50 | M3 | Joel (Gemini)
+Did: Re-architected app.py into full-width 4-tab layout, verified Nightshift calls with live Nemotron synthesis; fixed and verified smoke_test.py (3x PASS). Result: smoke_test.py all PASS, Nightshift proof counter logged 9+ requests. Changed files: app.py, smoke_test.py, AGENTS.md. Next: Capture Nightshift proof screenshots (M3-10) and draft pitch deck (M3-11). Blockers: none
+
+### 2026-10-25 16:30 UTC | M3/ALL | Antigravity
+Did: Live-wired app.py to agent.graph.run_claim(); populated all 4 tabs from live ClaimWorldModel (passes, interactive trace stream, 4-col contradiction matrix, live Zetaris SQL receipts). Result: Verified end-to-end for CLM-101, CLM-102, CLM-103 with live Zetaris and Nemotron. Changed files: app.py, AGENTS.md. Next: Capture Nightshift proof screenshots (M3-10), demo video & deck (M3-11/12). Blockers: none
+
+### 2026-10-26 06:10 UTC | ALL/M3 | Antigravity
+Did: Fixed ValueError: Cannot specify ',' with 's' in app.py & graph.py with safe string/numeric parse for claim_amount_usd. Result: PASS (conformance test 23/23 PASS). Changed files: app.py, agent/graph.py, AGENTS.md. Next: PR integration→main; M3 screenshots/video/deck. Blockers: none
+
 **Archive digest** (older entries folded here; max 15 lines)
-- _(empty)_
+- 2026-10-24: Created AGENTS.md from master guide; set up initial hybrid data design and task tracking.
+

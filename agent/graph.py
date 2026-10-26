@@ -28,7 +28,7 @@ from agent.sample_backend import run_sql_sample
 from agent.tools_zetaris import ZetarisError
 from agent.tools_zetaris import run_sql as zetaris_run_sql
 
-load_dotenv()
+load_dotenv(override=True)
 
 CLAIM_ID_RE = re.compile(r"^[A-Za-z0-9\-]{3,40}$")
 ZERO_DAY_RE = re.compile(r"zero[\s\-]?day|unpreventable", re.I)
@@ -366,7 +366,16 @@ def make_reporter(hmem: MeterlessHMemStore):
 def build_dossier(w: ClaimWorldModel, summary: str) -> str:
     uf, nc = w.underwriting_facts, w.narrative_claims
     amt = uf.get("claim_amount_usd")
-    amt_txt = f"  |  **Claim amount:** ${amt:,}" if isinstance(amt, (int, float)) else ""
+    amt_txt = ""
+    if amt is not None:
+        try:
+            if isinstance(amt, (int, float)):
+                amt_txt = f"  |  **Claim amount:** ${amt:,}"
+            else:
+                clean = str(amt).replace("$", "").replace(",", "").strip()
+                amt_txt = f"  |  **Claim amount:** ${int(float(clean)):,}"
+        except Exception:
+            amt_txt = f"  |  **Claim amount:** {amt}"
     L = [f"# Explainable Warranty Adjudication Dossier: {w.claim_id}", "",
          f"**Insured:** {uf.get('insured_company')}  |  **Policy:** {uf.get('policy_id')}{amt_txt}",
          f"**Broker:** {nc.get('submitted_by')}  |  **Alleged root cause:** {nc.get('root_cause')}  |  "
