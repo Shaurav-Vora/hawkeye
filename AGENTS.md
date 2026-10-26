@@ -52,7 +52,7 @@ Did: <1 line>. Result: <pass/fail + key evidence>. Changed files: <list>. Next: 
 
 ## 2. Current State (REWRITE IN PLACE; do not append)
 
-**Last updated:** 2026-10-26 06:10 UTC · **By:** Antigravity (AI session)
+**Last updated:** 2026-10-26 11:15 UTC · **By:** Antigravity (AI session)
 
 | Area | Status | Notes |
 |---|---|---|
@@ -63,8 +63,8 @@ Did: <1 line>. Result: <pass/fail + key evidence>. Changed files: <list>. Next: 
 | Meterless engines | 🟢 World Model + H-MEM | Implemented, conformance test 23/23 PASS |
 | `graph.py` / state | 🟢 Full 3-pass loop live | All 3 claims → correct verdict with live Zetaris + live Nemotron 2026-10-25 |
 | Nightshift + Nemotron | 🟢 Verified & passing | Port 8088, Nemotron 30B, smoke test PASS with live token |
-| Streamlit UI | 🟢 Fully live-wired | `app.py` runs full `run_claim()` multi-agent loop, renders live ClaimWorldModel in all 4 tabs |
-| Integration branch | 🟢 Pushed | `integration/m1-m2-merge` has all M1+M2+M3 code; PR to main pending |
+| Streamlit UI | 🟢 Fully merged & live | Merged `new-integration` light-theme executive UI with live Zetaris SQL & ClaimWorldModel |
+| Integration branch | 🟢 Merged & clean | `new-integration` merged into `integration/m1-m2-merge`; 23/23 conformance PASS |
 | Demo video / deck | 🔴 Not started | M3 owns |
 
 **Legend:** 🔴 not started · 🟡 in progress/partial · 🟢 done & verified
@@ -351,9 +351,6 @@ streamlit run app.py
 
 ## 11. Session Log (append-only; keep last 8 verbatim, compress older → digest)
 
-### 2026-10-24 16:00 | M1 | AI session 2
-Did: Found real Zetaris REST syntax; KEV registered as `threatintel.kev_catalog`, user confirmed rows for CVE-2023-46805/4863. Researched internal-table options: plain INSERT unsupported in docs, so planned Postgres+JDBC; wrote `data/sql/claims_seed.sql`. Changed files: AGENTS.md, data/sql/claims_seed.sql. Next: M1 starts claimsdb + registers claims_pg; then NVD REST tables. Blockers: JDBC path unverified by Zetaris.
-
 ### 2026-10-24 18:00 | M1 | AI session 3
 Did: User verified NVD live (both CVEs) and KEV⨝NVD join. Generated claim-file JSONs + `scripts/register_zetaris_sources.sql` (JSON-REST route). Changed files: AGENTS.md, data/sample/*.json, scripts/register_zetaris_sources.sql. Next: M1 pushes repo, runs script, tests 3-source join. Blockers: needs public repo URL.
 
@@ -375,6 +372,10 @@ Did: Live-wired app.py to agent.graph.run_claim(); populated all 4 tabs from liv
 ### 2026-10-26 06:10 UTC | ALL/M3 | Antigravity
 Did: Fixed ValueError: Cannot specify ',' with 's' in app.py & graph.py with safe string/numeric parse for claim_amount_usd. Result: PASS (conformance test 23/23 PASS). Changed files: app.py, agent/graph.py, AGENTS.md. Next: PR integration→main; M3 screenshots/video/deck. Blockers: none
 
+### 2026-10-26 11:15 UTC | M3/ALL | Antigravity
+Did: Merged branch `new-integration` into `integration/m1-m2-merge`; resolved app.py conflict by preserving Joel's light-theme UI and streaming trace while wiring in run_claim() + ClaimWorldModel + Section 5 Zetaris SQL receipts. Result: conformance 23/23 PASS; py_compile PASS. Changed files: app.py, AGENTS.md. Next: PR integration→main; M3 screenshots/video/deck. Blockers: none
+
 **Archive digest** (older entries folded here; max 15 lines)
 - 2026-10-24: Created AGENTS.md from master guide; set up initial hybrid data design and task tracking.
+- 2026-10-24 16:00: Found Zetaris REST syntax; registered KEV; planned Postgres/JDBC claimsdb with claims_seed.sql.
 
