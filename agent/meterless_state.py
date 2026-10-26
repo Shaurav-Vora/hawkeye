@@ -38,6 +38,8 @@ class ClaimWorldModel(BaseModel):
     escalation_branch: str = "PENDING"
     agent_trace_log: List[Dict[str, str]] = Field(default_factory=list)
     final_dossier_markdown: str = ""
+    # Optional callback for live trace streaming: called with (agent, action, detail) for each trace entry
+    trace_callback: Any = None
 
 
 _SEED_PRECEDENT = {

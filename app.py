@@ -4,7 +4,6 @@ Powered by Zetaris Federated SQL, Meterless World Model + H-MEM, and Meterless N
 """
 import html
 import os
-import time
 import uuid
 import requests
 import streamlit as st
@@ -966,8 +965,32 @@ if run_clicked:
     st.session_state.ns_online = check_nightshift_online()
     st.session_state.zet_online = check_zetaris_online()
 
+    # Live trace streaming: append each trace row as the agent loop emits it
+    rendered_steps = []
+
+    def on_trace(agent_name: str, action: str, detail: str) -> None:
+        act_lower = action.lower()
+        if "reject" in act_lower:
+            r_type = "reject"
+        elif "approve" in act_lower or "hmem_saved" in act_lower:
+            r_type = "approve"
+        else:
+            r_type = "normal"
+        row_cls = "reject" if r_type == "reject" else ("approve" if r_type == "approve" else "")
+        rendered_steps.append(
+            f'<div class="trace-row {row_cls}">'
+            f'<span class="trace-agent">{html.escape(agent_name)}</span> / '
+            f'<span class="trace-action">{html.escape(action)}</span>: '
+            f'<span>{html.escape(detail)}</span>'
+            f'</div>'
+        )
+        trace_placeholder.markdown(
+            f'<div class="trace-container">{"".join(rendered_steps)}</div>',
+            unsafe_allow_html=True,
+        )
+
     with st.spinner("Invoking multi-agent adjudication (Planner -> Specialist <-> Critic -> Reporter)..."):
-        world = run_claim(selected_id)
+        world = run_claim(selected_id, trace_callback=on_trace)
 
     # Determine trace steps: use dynamic steps from ClaimWorldModel if present, else fallback
     trace_steps = []
@@ -986,23 +1009,6 @@ if run_clicked:
             trace_steps.append((agent, action, detail, r_type))
     else:
         trace_steps = case["agent_trace"]
-
-    rendered_steps = []
-    for agent_name, action, detail, row_type in trace_steps:
-        row_cls = "reject" if row_type == "reject" else ("approve" if row_type == "approve" else "")
-        rendered_steps.append(
-            f'<div class="trace-row {row_cls}">'
-            f'<span class="trace-agent">{html.escape(agent_name)}</span> / '
-            f'<span class="trace-action">{html.escape(action)}</span>: '
-            f'<span>{html.escape(detail)}</span>'
-            f'</div>'
-        )
-        all_rows_html = "".join(rendered_steps)
-        trace_placeholder.markdown(
-            f'<div class="trace-container">{all_rows_html}</div>',
-            unsafe_allow_html=True,
-        )
-        time.sleep(0.10)
 
     ai_summary, ai_source = call_live_nemotron_summary(case, world)
     st.session_state.runs[selected_id] = {

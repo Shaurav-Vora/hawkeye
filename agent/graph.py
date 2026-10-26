@@ -58,6 +58,8 @@ def _truthy(v: Any) -> bool:
 
 def _trace(w: ClaimWorldModel, agent: str, action: str, detail: str) -> None:
     w.agent_trace_log.append({"agent": agent, "action": action, "detail": detail})
+    if w.trace_callback:
+        w.trace_callback(agent, action, detail)
 
 
 def _narrate(system_prompt: str, payload: str, fallback: str) -> str:
@@ -448,9 +450,9 @@ def _run_plain(hmem: MeterlessHMemStore, state: GraphState) -> GraphState:
     return make_reporter(hmem)(state)
 
 
-def run_claim(claim_id: str, hmem_path: str = "hmem_precedents.json", max_passes: int = 3, **kwargs) -> ClaimWorldModel:
+def run_claim(claim_id: str, hmem_path: str = "hmem_precedents.json", max_passes: int = 3, trace_callback=None, **kwargs) -> ClaimWorldModel:
     hmem = MeterlessHMemStore(filepath=hmem_path)
-    init: GraphState = {"world": ClaimWorldModel(claim_id=claim_id, max_passes=max_passes)}
+    init: GraphState = {"world": ClaimWorldModel(claim_id=claim_id, max_passes=max_passes, trace_callback=trace_callback)}
     try:
         out = build_graph(hmem).invoke(init, {"recursion_limit": 40})
     except ImportError:

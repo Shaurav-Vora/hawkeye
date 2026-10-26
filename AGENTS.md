@@ -52,7 +52,7 @@ Did: <1 line>. Result: <pass/fail + key evidence>. Changed files: <list>. Next: 
 
 ## 2. Current State (REWRITE IN PLACE; do not append)
 
-**Last updated:** 2026-10-26 11:15 UTC · **By:** Antigravity (AI session)
+**Last updated:** 2026-10-26 12:00 UTC · **By:** Antigravity (AI session)
 
 | Area | Status | Notes |
 |---|---|---|
@@ -61,7 +61,7 @@ Did: <1 line>. Result: <pass/fail + key evidence>. Changed files: <list>. Next: 
 | `tools_zetaris.py` | 🟢 ALL PASS live | `python -m agent.tools_zetaris` verified against real Zetaris 2026-10-25 |
 | `seed_sql.py` | 🟢 Written + verified | 18 statements, skips-already-exists, ALL PASS on live Zetaris 2026-10-25 |
 | Meterless engines | 🟢 World Model + H-MEM | Implemented, conformance test 23/23 PASS |
-| `graph.py` / state | 🟢 Full 3-pass loop live | All 3 claims → correct verdict with live Zetaris + live Nemotron 2026-10-25 |
+| `graph.py` / state | 🟢 Full 3-pass loop live + **live streaming trace** | All 3 claims → correct verdict with live Zetaris + live Nemotron. Trace streams row-by-row during `run_claim` via `trace_callback`. |
 | Nightshift + Nemotron | 🟢 Verified & passing | Port 8088, Nemotron 30B, smoke test PASS with live token |
 | Streamlit UI | 🟢 Fully merged & live | Merged `new-integration` light-theme executive UI with live Zetaris SQL & ClaimWorldModel |
 | Integration branch | 🟢 Merged & clean | `new-integration` merged into `integration/m1-m2-merge`; 23/23 conformance PASS |
@@ -372,8 +372,8 @@ Did: Live-wired app.py to agent.graph.run_claim(); populated all 4 tabs from liv
 ### 2026-10-26 06:10 UTC | ALL/M3 | Antigravity
 Did: Fixed ValueError: Cannot specify ',' with 's' in app.py & graph.py with safe string/numeric parse for claim_amount_usd. Result: PASS (conformance test 23/23 PASS). Changed files: app.py, agent/graph.py, AGENTS.md. Next: PR integration→main; M3 screenshots/video/deck. Blockers: none
 
-### 2026-10-26 11:15 UTC | M3/ALL | Antigravity
-Did: Merged branch `new-integration` into `integration/m1-m2-merge`; resolved app.py conflict by preserving Joel's light-theme UI and streaming trace while wiring in run_claim() + ClaimWorldModel + Section 5 Zetaris SQL receipts. Result: conformance 23/23 PASS; py_compile PASS. Changed files: app.py, AGENTS.md. Next: PR integration→main; M3 screenshots/video/deck. Blockers: none
+### 2026-10-26 12:00 UTC | M3 | Antigravity
+Did: Implemented live-agent-trace streaming in app.py via `trace_callback` hook. Added `trace_callback: Any = None` to `ClaimWorldModel` in `meterless_state.py`; `_trace()` in `graph.py` invokes callback per entry; `run_claim()` accepts `trace_callback` parameter; app.py renders each trace row as the agent loop emits it (no waiting for full load). Code compiles clean (3 files py_compile PASS). Changed files: AGENTS.md, app.py, agent/graph.py, agent/meterless_state.py. Next: PR integration→main; M3 screenshots/video/deck. Blockers: none.
 
 **Archive digest** (older entries folded here; max 15 lines)
 - 2026-10-24: Created AGENTS.md from master guide; set up initial hybrid data design and task tracking.
