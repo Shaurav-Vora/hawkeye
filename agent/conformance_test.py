@@ -49,9 +49,9 @@ def test_world_model() -> None:
 
 EXPECTED = {
     # claim: (branch, revision_count, passes_run, min_conf)
-    "CLM-2026-101": ("RESERVATION_OF_RIGHTS", 2, [1, 2, 3], 96),
-    "CLM-2026-102": ("STANDARD_APPROVAL", 1, [1, 2], 95),
-    "CLM-2026-103": ("SIU_TAMPERING_ESCALATION", 1, [1, 2], 94),
+    "CLM-2026-101": ("RESERVATION_OF_RIGHTS", 2, [1, 2, 3], 90),
+    "CLM-2026-102": ("STANDARD_APPROVAL", 1, [1, 2], 55),
+    "CLM-2026-103": ("SIU_TAMPERING_ESCALATION", 1, [1, 2], 55),
 }
 
 

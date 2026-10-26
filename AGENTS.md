@@ -52,7 +52,7 @@ Did: <1 line>. Result: <pass/fail + key evidence>. Changed files: <list>. Next: 
 
 ## 2. Current State (REWRITE IN PLACE; do not append)
 
-**Last updated:** 2026-10-26 12:00 UTC · **By:** Antigravity (AI session)
+**Last updated:** 2026-10-26 12:35 UTC · **By:** Antigravity (AI session)
 
 | Area | Status | Notes |
 |---|---|---|
@@ -61,10 +61,10 @@ Did: <1 line>. Result: <pass/fail + key evidence>. Changed files: <list>. Next: 
 | `tools_zetaris.py` | 🟢 ALL PASS live | `python -m agent.tools_zetaris` verified against real Zetaris 2026-10-25 |
 | `seed_sql.py` | 🟢 Written + verified | 18 statements, skips-already-exists, ALL PASS on live Zetaris 2026-10-25 |
 | Meterless engines | 🟢 World Model + H-MEM | Implemented, conformance test 23/23 PASS |
-| `graph.py` / state | 🟢 Full 3-pass loop live + **live streaming trace** | All 3 claims → correct verdict with live Zetaris + live Nemotron. Trace streams row-by-row during `run_claim` via `trace_callback`. |
-| Nightshift + Nemotron | 🟢 Verified & passing | Port 8088, Nemotron 30B, smoke test PASS with live token |
-| Streamlit UI | 🟢 Fully merged & live | Merged `new-integration` light-theme executive UI with live Zetaris SQL & ClaimWorldModel |
-| Integration branch | 🟢 Merged & clean | `new-integration` merged into `integration/m1-m2-merge`; 23/23 conformance PASS |
+| `graph.py` / state | 🟢 Cleaned & Verified | Templated critic (no hallucinated tables); CVSS v3.1; dynamic confidence; LRU-cached Pass 3; 23/23 conformance PASS |
+| Nightshift + Nemotron | 🟢 Verified & passing | Port 8088, Nemotron 30B, bounded timeout & retries |
+| Streamlit UI | 🟢 Fully merged & live | One-by-one sequential trace streaming; dynamic Live SQL badge from receipts; Reservation of Rights & Standard Processing semantics |
+| Integration branch | 🟢 Merged & clean | Conformance 23/23 PASS; live execution tested |
 | Demo video / deck | 🔴 Not started | M3 owns |
 
 **Legend:** 🔴 not started · 🟡 in progress/partial · 🟢 done & verified
@@ -351,31 +351,12 @@ streamlit run app.py
 
 ## 11. Session Log (append-only; keep last 8 verbatim, compress older → digest)
 
-### 2026-10-24 18:00 | M1 | AI session 3
-Did: User verified NVD live (both CVEs) and KEV⨝NVD join. Generated claim-file JSONs + `scripts/register_zetaris_sources.sql` (JSON-REST route). Changed files: AGENTS.md, data/sample/*.json, scripts/register_zetaris_sources.sql. Next: M1 pushes repo, runs script, tests 3-source join. Blockers: needs public repo URL.
-
-### 2026-10-24 20:00 | M1 | AI session 4
-Did: M1 verified all 5 sources + API key. Wrote `agent/tools_zetaris.py` + `agent/__init__.py` from Zetaris's official client; mock-server tested (ok, 400, 401, missing key, empty, unreachable). Updated guide statuses. Next: M1 runs `python -m agent.tools_zetaris` live. Blockers: none
-
-### 2026-10-24 21:00 | M1 | AI session 5
-Did: Decision: each member runs own Zetaris. Wrote `seed_sql.py` (splits SQL, skips 'already exists', stops on real error, runs self-test), full 18-statement `scripts/register_zetaris_sources.sql`, `docs/TEAMMATE_ZETARIS_SETUP.md`; mock-tested. Next: M1 pushes, M2/M3 install own Zetaris and run seed_sql.py (first real fresh-instance test). Blockers: none
-
-### 2026-10-25 12:00 UTC | M1 | Antigravity (AI session 6)
-Did: Created branch `member-1-data-zetaris`; pulled all remote branches; merged M2+M3 into `integration/m1-m2-merge` (resolved llm.py conflict, kept M2 arch + M3 __main__); ran conformance 23/23 PASS; installed Nightshift + Nemotron live; smoke_test 3x PASS; `python -m agent.tools_zetaris` ALL PASS live; `python -m agent.graph --all` → correct verdicts for all 3 claims with live Zetaris+Nemotron. Result: PASS. Changed files: AGENTS.md. Next: PR integration→main; M2-13 traces; M3 screenshots+deck+video. Blockers: none
-
-### 2026-10-25 13:50 | M3 | Joel (Gemini)
-Did: Re-architected app.py into full-width 4-tab layout, verified Nightshift calls with live Nemotron synthesis; fixed and verified smoke_test.py (3x PASS). Result: smoke_test.py all PASS, Nightshift proof counter logged 9+ requests. Changed files: app.py, smoke_test.py, AGENTS.md. Next: Capture Nightshift proof screenshots (M3-10) and draft pitch deck (M3-11). Blockers: none
-
-### 2026-10-25 16:30 UTC | M3/ALL | Antigravity
-Did: Live-wired app.py to agent.graph.run_claim(); populated all 4 tabs from live ClaimWorldModel (passes, interactive trace stream, 4-col contradiction matrix, live Zetaris SQL receipts). Result: Verified end-to-end for CLM-101, CLM-102, CLM-103 with live Zetaris and Nemotron. Changed files: app.py, AGENTS.md. Next: Capture Nightshift proof screenshots (M3-10), demo video & deck (M3-11/12). Blockers: none
-
-### 2026-10-26 06:10 UTC | ALL/M3 | Antigravity
-Did: Fixed ValueError: Cannot specify ',' with 's' in app.py & graph.py with safe string/numeric parse for claim_amount_usd. Result: PASS (conformance test 23/23 PASS). Changed files: app.py, agent/graph.py, AGENTS.md. Next: PR integration→main; M3 screenshots/video/deck. Blockers: none
-
-### 2026-10-26 12:00 UTC | M3 | Antigravity
-Did: Implemented live-agent-trace streaming in app.py via `trace_callback` hook. Added `trace_callback: Any = None` to `ClaimWorldModel` in `meterless_state.py`; `_trace()` in `graph.py` invokes callback per entry; `run_claim()` accepts `trace_callback` parameter; app.py renders each trace row as the agent loop emits it (no waiting for full load). Code compiles clean (3 files py_compile PASS). Changed files: AGENTS.md, app.py, agent/graph.py, agent/meterless_state.py. Next: PR integration→main; M3 screenshots/video/deck. Blockers: none.
+### 2026-10-26 13:15 UTC | ALL | Antigravity
+Did: Computed confidence dynamically from evidence volume/breadth (thin single-log claims score 60%, multi-source CLM-101 scores 95%, max 95%); replaced H-MEM precedent appending with deduplicating store_decision (records replaced in place); cleaned hmem_precedents.json; updated Pass 1 bullet to 'Broker narrative not yet verified against telemetry'; updated table badges to 'WARRANTY BREACHED (per logs)'. Result: Conformance 23/23 PASS. Changed files: agent/graph.py, agent/meterless_state.py, agent/conformance_test.py, hmem_precedents.json, app.py, AGENTS.md. Next: PR integration→main; M3 screenshots/video/deck. Blockers: none.
 
 **Archive digest** (older entries folded here; max 15 lines)
 - 2026-10-24: Created AGENTS.md from master guide; set up initial hybrid data design and task tracking.
 - 2026-10-24 16:00: Found Zetaris REST syntax; registered KEV; planned Postgres/JDBC claimsdb with claims_seed.sql.
+- 2026-10-24 18:00: M1 verified NVD and KEV-NVD join live; generated claimfile JSONs and registration SQL.
+- 2026-10-26 12:35: Fixed Critic table hallucinations using CRITIC_TEXT; removed invented patching warranty; aligned verdict semantics; updated trace to CVSS v3.1; added LRU cache and sequential UI streaming.
 

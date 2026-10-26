@@ -27,7 +27,7 @@ def llm_configured() -> bool:
 
 def get_meterless_client() -> OpenAI:
     """OpenAI-compatible client routed through Meterless Nightshift Runtime."""
-    return OpenAI(base_url=_base_url(), api_key=_token(), default_headers=APP_HEADERS, timeout=30)
+    return OpenAI(base_url=_base_url(), api_key=_token(), default_headers=APP_HEADERS, timeout=5.0, max_retries=0)
 
 
 def discover_models() -> list:

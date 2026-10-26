@@ -122,6 +122,12 @@ header[data-testid="stHeader"], footer, #MainMenu, [data-testid="stToolbar"] {
 }
 .dot.green { background: var(--grn); }
 .dot.amber { background: var(--amb); }
+.dot.red { background: var(--red); }
+.status-pill.red {
+    background: var(--red-bg);
+    border-color: var(--red-border);
+    color: #991B1B;
+}
 
 /* Section Headers */
 .section-header {
@@ -492,8 +498,8 @@ CLAIMS = {
         "policy_id": "POL-CYB-901",
         "broker": "Marsh Cyber Claims Broker",
         "amount": "$1,400,000",
-        "payout": "$0 (Claim Denied)",
-        "confidence": "98%",
+        "payout": "Payout on hold pending adjuster review",
+        "confidence": "95%",
         "branch": "RESERVATION_OF_RIGHTS",
         "cve": "CVE-2023-46805",
         "breach_date": "Oct 14, 2026 (02:14 UTC)",
@@ -510,63 +516,63 @@ CLAIMS = {
         "pass1_bullets": [
             "Policy POL-CYB-901 requires 100% MFA and locked offline backups.",
             "Broker claims an unpreventable 'Zero-Day VPN Exploit' (CVE-2023-46805).",
-            "No computer logs were attached to prove the broker's story.",
+            "Broker narrative not yet verified against telemetry.",
         ],
-        "pass1_critic": ("red", "REJECTED PASS 1: Broker story is unverified. Requesting raw server authentication logs."),
+        "pass1_critic": ("red", "Rejected: no raw telemetry yet. Next: query claimfile.forensic_auth_logs for this claim."),
         "pass2_bullets": [
             "Log LOG-99410 shows admin account 'svc_backup_admin' logged in with a password only (MFA was bypassed).",
             "Backup immutability locks were manually turned off by an administrator.",
             "Log LOG-99411 shows the same account deleted shadow backup copies.",
         ],
-        "pass2_critic": ("amber", "REJECTED PASS 2: MFA breach proven, but broker claims CVE-2023-46805 was a brand-new zero-day. Checking CISA & NIST."),
+        "pass2_critic": ("amber", "Rejected: broker asserts a zero-day. Next: check CVE-2023-46805 in threatintel.kev_catalog and threatintel.nvd_cves."),
         "pass3_bullets": [
             "CISA added CVE-2023-46805 to the Known Exploited catalog on Jan 10, 2024.",
-            "NIST published the flaw on Jan 12, 2024 (Severity 8.2 / High) with known ransomware use.",
-            "The flaw was publicly known for over 2.5 years—not a zero-day.",
+            "NIST published the flaw on Jan 12, 2024 (CVSS v3.1: 8.2 / High) with known ransomware use.",
+            "The flaw was publicly known for 2.8 years before the breach—not a zero-day.",
         ],
-        "pass3_critic": ("green", "APPROVED PASS 3 (98% Confidence): All evidence cross-verified. Recommend Reservation of Rights / Denial."),
+        "pass3_critic": ("green", "Approved: Raw telemetry and threat intel cross-checked against underwriting attestations. Branch: RESERVATION_OF_RIGHTS."),
         "agent_trace": [
-            ("Planner", "plan_written", "1. Retrieve raw machine telemetry (forensic_auth_logs) to verify authentication events, MFA bypass claims, and svc_backup_admin session integrity. 2. Cross-reference CVE-2023-46805 via CISA KEV and NIST NVD to confirm active exploitation, patch status, and ransomware correlation. 3. Correlate backup_immutable_lock=DISABLED_BY_ADMIN with telemetry-verified access patterns to assess data exfiltration or encryption risk. 4. Map findings to warranty terms and reservation of rights determination, preserving all evidence for adjudication.", "normal"),
+            ("Planner", "plan_written", "1. Retrieve raw machine telemetry (forensic_auth_logs) to verify authentication events, MFA bypass claims, and svc_backup_admin session integrity. 2. Cross-reference CVE-2023-46805 via CISA KEV and NIST NVD to confirm active exploitation, patch status, and ransomware correlation. 3. Correlate backup_immutable_lock=DISABLED_BY_ADMIN with telemetry-verified access patterns. 4. Synthesize findings for reservation of rights recommendation.", "normal"),
             ("Planner", "delegate", "Handing off to Specialist (Pass 1).", "normal"),
             ("Specialist", "start_pass_1", "Revision 0: policy + broker narrative.", "normal"),
-            ("Specialist", "pass1_draft", "Initial finding (broker story only, UNVERIFIED): policy POL-CYB-901 warrants MFA + immutable backups; broker alleges 'Zero-Day VPN Appliance Exploit' (CVE CVE-2023-46805).", "normal"),
-            ("Critic", "REJECT (Check 1: forensic_evidence empty)", "The empty forensic_evidence table leaves the narrative unverified; query the witness_statements table next to obtain corroborating evidence.", "reject"),
+            ("Specialist", "pass1_draft", "Initial finding (broker story only, UNVERIFIED): policy POL-CYB-901 warrants MFA + immutable backups; broker alleges 'Zero-Day VPN Appliance Exploit' (CVE-2023-46805).", "normal"),
+            ("Critic", "REJECT (Check 1: forensic_evidence empty)", "Rejected: no raw telemetry yet. Next: query claimfile.forensic_auth_logs for this claim.", "reject"),
             ("Specialist", "start_pass_2", "Revision 1: Critic demanded raw forensic_auth_logs.", "normal"),
-            ("Specialist", "pass2_forensics", "Log LOG-99410 documents a privileged service account (svc_backup_admin) achieving a successful VPN RDP login from source IP 185.220.101.44 using password-only authentication with an MFA bypass legacy exception, while the backup immutable lock was disabled by admin, occurring 18 hours before a claimed zero-day event. Log LOG-99411 records the same account (svc_backup_admin) performing lateral movement to a domain controller and shadow copy deletion from IP 10.20.1.5 using internal Kerberos authentication, also with MFA bypass legacy exception and immutable lock disabled. Both events are linked to claim CLM-2026-101 and involve the service account circumventing MFA through the BYPASS_MFA_LEGACY_SVC rule created on 2026-04-10.", "normal"),
-            ("Critic", "REJECT (Check 2: zero-day asserted, no external intel)", "Your zero-day claim rests on unverified narrative; query the external_intel_feeds table immediately to validate whether this vulnerability has documented external observability.", "reject"),
+            ("Specialist", "pass2_forensics", "Log LOG-99410 documents account 'svc_backup_admin' logging into VPN RDP via password-only authentication with MFA bypassed (BYPASS_MFA_LEGACY_SVC) 18 hours before breach, while backup locks were disabled by admin.", "normal"),
+            ("Critic", "REJECT (Check 2: zero-day asserted, no external intel)", "Rejected: broker asserts a zero-day. Next: check CVE-2023-46805 in threatintel.kev_catalog and threatintel.nvd_cves.", "reject"),
             ("Specialist", "start_pass_3", "Revision 2: Critic demanded external threat intel.", "normal"),
-            ("Specialist", "pass3_external", "The data record with claim_id CLM-2026-101 identifies a claimed vulnerability CVE-2023-46805, added to the system on 2024-01-10, with a CVSS v3 score of 8.2. The same entry flags CVE-2023-46805 as being used in a known ransomware campaign, as indicated by the knownRansomwareCampaignUse field set to Known. The vulnerability was officially published on 2024-01-12T17:15:09.530, documenting its release timestamp.", "normal"),
-            ("Critic", "APPROVE", "Raw logs cross-checked against underwriting attestations. Branch: RESERVATION_OF_RIGHTS.", "approve"),
+            ("Specialist", "pass3_external", "CVE-2023-46805 was added to CISA KEV on 2024-01-10 (ransomware use: Known) and published in NIST NVD on 2024-01-12 with a CVSS v3.1 score of 8.2.", "normal"),
+            ("Critic", "APPROVE", "Approved: Raw telemetry and threat intel cross-checked against underwriting attestations. Branch: RESERVATION_OF_RIGHTS.", "approve"),
             ("Risk Reporter", "hmem_saved", "Stored RESERVATION_OF_RIGHTS precedent for CLM-2026-101.", "approve"),
         ],
         "verdict_style": "red",
-        "verdict_title": "COVERAGE DENIED: RESERVATION OF RIGHTS",
-        "verdict_sub": "Material misrepresentation confirmed: MFA was bypassed on an admin account, backup locks were disabled, and the cited vulnerability was publicly known for over two years.",
+        "verdict_title": "RESERVATION OF RIGHTS RECOMMENDED",
+        "verdict_sub": "Apparent warranty breaches (MFA bypass, backup locks disabled) and public records contradict the zero-day claim. Payout on hold pending adjuster review.",
         "matrix": [
             (
                 "100% Multi-Factor Authentication (MFA)",
                 "MFA was enforced on all accounts",
                 "Admin account 'svc_backup_admin' logged in with a password only (MFA bypassed) 18 hours before the attack (Log #LOG-99410).",
                 "Not applicable (Internal security control)",
-                "red", "WARRANTY BREACHED",
+                "red", "WARRANTY BREACHED (per logs)",
             ),
             (
                 "Immutable Offline Backups",
                 "Backups were locked and protected",
-                "Backup immutability lock was disabled by an administrator and shadow copies were deleted (Log #LOG-99411).",
+                "Backup immutability lock was disabled by an administrator (Log #LOG-99410) and shadow copies deleted (Log #LOG-99411).",
                 "Not applicable (Internal security control)",
-                "red", "WARRANTY BREACHED",
+                "red", "WARRANTY BREACHED (per logs)",
             ),
             (
-                "Timely Patching of Known Flaws",
-                "Attack used an unpreventable zero-day bug (CVE-2023-46805)",
-                "VPN appliance was left unpatched against a known vulnerability.",
-                "Added to CISA catalog on Jan 10, 2024 (Severity 8.2/10)—known 2.8 years before the breach.",
-                "red", "FALSE ZERO-DAY CLAIM",
+                "Root Cause / Zero-Day Claim",
+                "Unpreventable zero-day exploit of CVE-2023-46805",
+                "Broker said: zero-day. Public record: KEV added 2024-01-10, NVD published 2024-01-12, 2.8 years before the breach. Finding: the zero-day claim is contradicted. Whether the appliance was unpatched isn't shown by our evidence.",
+                "CISA KEV added 2024-01-10 (Known Ransomware); NIST NVD published 2024-01-12 (CVSS v3.1: 8.2 HIGH).",
+                "red", "CONTRADICTED ROOT CAUSE",
             ),
         ],
         "default_summary": (
-            "The adjudication recommends a Reservation of Rights (Coverage Denial) based on critical security control failures documented in Log LOG-99410, including password-only authentication for svc_backup_admin with a legacy MFA bypass and disabled backup locks. Furthermore, CISA and NIST records confirm CVE-2023-46805 has been publicly known since January 2024, disproving the broker's zero-day claim."
+            "Adjudication recommendation: Reservation of rights recommended; payout on hold pending adjuster review. Telemetry shows password-only login with legacy MFA bypass on svc_backup_admin and disabled backup locks 18 hours prior to the breach (logs show the lock was disabled, not that this caused the breach). Furthermore, CISA and NIST records prove CVE-2023-46805 was cataloged in January 2024 (2.8 years prior), contradicting the broker's zero-day claim."
         ),
     },
     "CLM-2026-102": {
@@ -575,8 +581,8 @@ CLAIMS = {
         "policy_id": "POL-CYB-902",
         "broker": "Aon Incident Response Team",
         "amount": "$850,000",
-        "payout": "$850,000 (Approved)",
-        "confidence": "96%",
+        "payout": "Standard processing recommended ($850,000 claim)",
+        "confidence": "60%",
         "branch": "STANDARD_APPROVAL",
         "cve": "CVE-2023-4863",
         "breach_date": "Oct 15, 2026 (11:30 UTC)",
@@ -594,32 +600,32 @@ CLAIMS = {
             "Broker reports a post-MFA browser exploit (CVE-2023-4863).",
             "Requires machine log check to verify MFA and backup status.",
         ],
-        "pass1_critic": ("red", "REJECTED PASS 1: Query the evidence log table to verify recorded forensic examinations."),
+        "pass1_critic": ("red", "Rejected: no raw telemetry yet. Next: query claimfile.forensic_auth_logs for this claim."),
         "pass2_bullets": [
             "Log LOG-88201 confirms user 'j.miller@nexus.com' completed a verified Okta Push MFA challenge.",
             "Subsequent browser exploit attempt occurred after valid authentication.",
             "Backup vault confirms OBJECT_LOCK_ACTIVE blocked ransomware encryption.",
         ],
-        "pass2_critic": ("amber", "PASS 2 VERIFIED: Internal logs match policy promises. Verifying CVE-2023-4863 against CISA & NIST."),
+        "pass2_critic": ("green", "Approved: Raw telemetry cross-checked against underwriting attestations. Branch: STANDARD_APPROVAL."),
         "pass3_bullets": [
-            "CISA KEV and NIST NVD confirm CVE-2023-4863 is a genuine Chromium WebP flaw (Severity 8.8 / High).",
+            "CISA KEV and NIST NVD confirm CVE-2023-4863 is a genuine Chromium WebP flaw (CVSS v3.1: 8.8 / High).",
             "Broker never falsely claimed a zero-day, and all required security warranties held.",
         ],
-        "pass3_critic": ("green", "APPROVED PASS 3 (96% Confidence): Raw logs match underwriting promises. Branch: STANDARD_APPROVAL."),
+        "pass3_critic": ("green", "Approved: Raw telemetry cross-checked against underwriting attestations. Branch: STANDARD_APPROVAL."),
         "agent_trace": [
-            ("Planner", "plan_written", "1. Obtain raw machine telemetry (forensic_auth_logs) and validate authentication events. 2. Cross-reference all alleged CVEs/zero-days against CISA KEV and NIST NVD threat intelligence. 3. Assess MFA bypass mechanisms and backup immutable lock configuration from logs. 4. Withhold conclusions until raw telemetry and external threat intel are fully correlated. 5. Submit warranty risk assessment with documented evidence.", "normal"),
+            ("Planner", "plan_written", "1. Obtain raw machine telemetry (forensic_auth_logs) and validate authentication events. 2. Verify MFA status and backup immutable lock configuration from logs. 3. Confirm absence of unpreventable zero-day allegations. 4. Submit warranty compliance determination.", "normal"),
             ("Planner", "delegate", "Handing off to Specialist (Pass 1).", "normal"),
             ("Specialist", "start_pass_1", "Revision 0: policy + broker narrative.", "normal"),
-            ("Specialist", "pass1_draft", "The claim CLM-2026-102 under policy POL-CYB-902 for Nexus Global Logistics seeks $850,000, with all three warranties (mfa_all_remote, mfa_service_accts, immutable_backups) marked true and a signed attestation enforcing 100% MFA via Okta Verify and immutable S3 Object Lock on daily backups. The breach reported on 2026-10-15T11:30:00Z attributes the root cause to 'Session Token Phishing / Browser Exploit' (CVE-2023-4863).", "normal"),
-            ("Critic", "REJECT (Check 1: forensic_evidence empty)", "Query the evidence_log table to retrieve any recorded forensic examinations.", "reject"),
+            ("Specialist", "pass1_draft", "The claim CLM-2026-102 under policy POL-CYB-902 for Nexus Global Logistics seeks $850,000, with all three warranties marked true and a signed attestation enforcing 100% MFA via Okta Verify and immutable S3 Object Lock.", "normal"),
+            ("Critic", "REJECT (Check 1: forensic_evidence empty)", "Rejected: no raw telemetry yet. Next: query claimfile.forensic_auth_logs for this claim.", "reject"),
             ("Specialist", "start_pass_2", "Revision 1: Critic demanded raw forensic_auth_logs.", "normal"),
-            ("Specialist", "pass2_forensics", "LOG-88201 shows a standard user j.miller@nexus.com passed Okta push MFA at 2026-10-15T11:28:40Z, but a subsequent post-auth browser exploit CVE-2023-4863 triggered a payload attempt. The same LOG-88201 entry records that the OBJECT_LOCK_ACTIVE immutable backup vault successfully blocked encryption from that payload.", "normal"),
-            ("Critic", "APPROVE", "Raw logs cross-checked against underwriting attestations. Branch: STANDARD_APPROVAL.", "approve"),
+            ("Specialist", "pass2_forensics", "Log LOG-88201 shows user j.miller@nexus.com passed Okta push MFA at 2026-10-15T11:28:40Z. The same log records that OBJECT_LOCK_ACTIVE immutable backup vault successfully blocked payload encryption.", "normal"),
+            ("Critic", "APPROVE", "Approved: Raw telemetry cross-checked against underwriting attestations. Branch: STANDARD_APPROVAL.", "approve"),
             ("Risk Reporter", "hmem_saved", "Stored STANDARD_APPROVAL precedent for CLM-2026-102.", "approve"),
         ],
         "verdict_style": "green",
-        "verdict_title": "CLAIM APPROVED: FULL INDEMNIFICATION ($850,000)",
-        "verdict_sub": "Forensic telemetry confirms full compliance with 100% Okta MFA and immutable backup warranties during the incident.",
+        "verdict_title": "WARRANTY COMPLIANCE CONFIRMED: STANDARD PROCESSING RECOMMENDED",
+        "verdict_sub": "Forensic telemetry confirms compliance with 100% Okta MFA and immutable backup warranties during the incident. Adjuster review required for final settlement.",
         "matrix": [
             (
                 "100% Multi-Factor Authentication (MFA)",
@@ -639,12 +645,12 @@ CLAIMS = {
                 "Covered Cyber Incident",
                 "Post-authentication browser exploit (CVE-2023-4863)",
                 "Browser process exploit occurred after compliant login.",
-                "Confirmed in CISA & NIST databases (Severity 8.8/10); no false zero-day claim made.",
+                "Confirmed in CISA & NIST databases (CVSS v3.1: 8.8/10); no false zero-day claim made.",
                 "green", "VERIFIED PERIL",
             ),
         ],
         "default_summary": (
-            "The adjudication recommendation for this claim under the STANDARD_APPROVAL branch is favorable, as forensic logs (LOG-88201) match the underwriting attestations with zero warranty contradictions. Okta Push MFA was verified and immutable backup locks successfully blocked encryption."
+            "Adjudication recommendation: Standard processing recommended for this claim under policy POL-CYB-902, as forensic telemetry (LOG-88201) matches underwriting attestations with zero warranty contradictions. Okta Push MFA was verified and immutable backup locks successfully blocked encryption. Final settlement subject to adjuster review."
         ),
     },
     "CLM-2026-103": {
@@ -653,8 +659,8 @@ CLAIMS = {
         "policy_id": "POL-CYB-903",
         "broker": "Willis Towers Cyber Practice",
         "amount": "$2,100,000",
-        "payout": "$0 (Suspended — SIU Hold)",
-        "confidence": "94%",
+        "payout": "Payout suspended pending SIU review",
+        "confidence": "60%",
         "branch": "SIU_TAMPERING_ESCALATION",
         "cve": "None Cited (NULL)",
         "breach_date": "Oct 16, 2026 (04:00 UTC)",
@@ -672,35 +678,35 @@ CLAIMS = {
             "Broker claims logs are unavailable due to 'routine storage rotation'.",
             "Missing logs right before a $2.1M attack requires immediate forensic inspection.",
         ],
-        "pass1_critic": ("red", "REJECTED PASS 1: Unverified missing-log excuse. Inspecting raw domain controller event logs."),
+        "pass1_critic": ("red", "Rejected: no raw telemetry yet. Next: query claimfile.forensic_auth_logs for this claim."),
         "pass2_bullets": [
             "Log LOG-77105 recorded Windows Security EventID 1102 ('Audit log cleared by Administrator') at 21:45 UTC.",
             "Created a deliberate 6-hour telemetry blackout before the 04:00 UTC ransomware attack.",
             "Directly disproves the broker's 'routine storage rotation' story.",
         ],
-        "pass2_critic": ("amber", "REJECTED PASS 2: Intentional log wiping detected. Checking external threat feeds for any cited CVE."),
+        "pass2_critic": ("amber", "Rejected: audit-log tampering detected. Next: query external threat feeds to verify breach cause."),
         "pass3_bullets": [
             "External check against CISA KEV and NIST NVD returned no records because the broker cited no CVE.",
             "Deliberate log wiping combined with an unverifiable intrusion requires fraud escalation.",
         ],
-        "pass3_critic": ("amber", "ESCALATED PASS 3 (94% Confidence): Refer claim immediately to Special Investigation Unit (SIU)."),
+        "pass3_critic": ("amber", "Approved: Forensic log clearing (EventID 1102) verified. Branch: SIU_TAMPERING_ESCALATION."),
         "agent_trace": [
-            ("Planner", "plan_written", "1. Inspect raw domain controller telemetry (forensic_auth_logs) for log continuity and authentication events. 2. Verify broker claim of routine storage rotation against Windows Security Event IDs. 3. Execute LEFT JOIN against CISA KEV and NIST NVD for any external vulnerability evidence. 4. Escalate to Special Investigation Unit (SIU) if spoliation of evidence is detected.", "normal"),
+            ("Planner", "plan_written", "1. Inspect raw domain controller telemetry (forensic_auth_logs) for log continuity and authentication events. 2. Verify broker claim of routine storage rotation against Windows Security Event IDs. 3. Execute LEFT JOIN against CISA KEV and NIST NVD. 4. Escalate to Special Investigation Unit (SIU) if spoliation of evidence is detected.", "normal"),
             ("Planner", "delegate", "Handing off to Specialist (Pass 1).", "normal"),
             ("Specialist", "start_pass_1", "Revision 0: policy + broker narrative.", "normal"),
             ("Specialist", "pass1_draft", "Initial finding (UNVERIFIED): Policy POL-CYB-903 warrants 100% MFA and 90-day log retention; broker claims 'Unknown Perimeter Breach' with missing logs attributed to storage rotation.", "normal"),
-            ("Critic", "REJECT (Check 1: forensic_evidence empty)", "Missing log explanation is unverified hearsay; query forensic_auth_logs immediately to inspect domain controller events.", "reject"),
+            ("Critic", "REJECT (Check 1: forensic_evidence empty)", "Rejected: no raw telemetry yet. Next: query claimfile.forensic_auth_logs for this claim.", "reject"),
             ("Specialist", "start_pass_2", "Revision 1: Critic demanded raw forensic_auth_logs.", "normal"),
             ("Specialist", "pass2_forensics", "Log LOG-77105 captures Windows Security EventID 1102 ('The audit log was cleared') executed by account Administrator at 21:45 UTC, creating a 6-hour telemetry blackout prior to ransomware detonation at 04:00 UTC.", "normal"),
-            ("Critic", "REJECT (Check 2: verify external threat intel)", "Audit log tampering confirmed; execute LEFT JOIN against external threat feeds to confirm NULL CVE status.", "reject"),
+            ("Critic", "REJECT (Check 2: verify external threat intel)", "Rejected: audit log tampering detected. Next: query external threat feeds to verify breach cause.", "reject"),
             ("Specialist", "start_pass_3", "Revision 2: Critic demanded external threat intel check.", "normal"),
             ("Specialist", "pass3_external", "Federated LEFT JOIN across CISA KEV and NIST NVD returned NULL as no CVE identifier was provided by the broker.", "normal"),
-            ("Critic", "APPROVE", "Forensic log clearing (EventID 1102) verified. Branch: SIU_TAMPERING_ESCALATION.", "approve"),
+            ("Critic", "APPROVE", "Approved: Forensic log clearing (EventID 1102) verified. Branch: SIU_TAMPERING_ESCALATION.", "approve"),
             ("Risk Reporter", "hmem_saved", "Stored SIU_TAMPERING_ESCALATION precedent for CLM-2026-103.", "approve"),
         ],
         "verdict_style": "amber",
-        "verdict_title": "ESCALATED: SPECIAL INVESTIGATION UNIT (EVIDENCE TAMPERING)",
-        "verdict_sub": "Server logs prove an Administrator manually wiped the security audit log (EventID 1102) 6 hours before the attack.",
+        "verdict_title": "SPECIAL INVESTIGATION UNIT (SIU) ESCALATION",
+        "verdict_sub": "Server logs prove Administrator manually wiped security audit log (EventID 1102) 6 hours before the attack. Fraud investigation hold.",
         "matrix": [
             (
                 "90-Day Security Log Retention",
@@ -725,7 +731,7 @@ CLAIMS = {
             ),
         ],
         "default_summary": (
-            "The adjudication recommends immediate escalation to the Special Investigation Unit (SIU) and suspension of the $2,100,000 claim. Forensic log LOG-77105 proves the Windows security audit log was manually cleared (EventID 1102) creating a 6-hour blackout, directly contradicting the broker's claim of routine storage rotation."
+            "Adjudication recommendation: Immediate escalation to the Special Investigation Unit (SIU) with payout suspended on the $2,100,000 claim. Forensic log LOG-77105 proves Windows security audit logs were manually cleared (EventID 1102) creating a 6-hour blackout, directly contradicting the broker's claim of routine storage rotation."
         ),
     },
 }
@@ -767,8 +773,9 @@ def call_live_nemotron_summary(case: dict, world: ClaimWorldModel = None) -> tup
         from agent.llm import call_nemotron
 
         sys_prompt = (
-            "You are a senior cyber insurance claims director writing for a non-technical business executive. "
-            "Write a clear, 2-3 sentence plain-English explanation of the claim decision. "
+            "You are a senior cyber insurance claims director writing for a claims adjuster. "
+            "Write a clear, 2-3 sentence plain-English explanation of the claim adjudication recommendation. "
+            "Never declare a final denial or settlement payout; recommend reservation of rights (payout on hold) or standard processing based on warranty compliance. "
             "Do not use code, database column names, or markdown symbols."
         )
         verdict_text = case["verdict_title"]
@@ -805,7 +812,7 @@ def build_human_friendly_markdown(cid: str, case: dict, summary_text: str) -> st
         "",
         "## 1. Final Adjudication Decision",
         f"- **Decision:** {case['verdict_title']}",
-        f"- **Approved Payout:** {case['payout']}",
+        f"- **Adjudication Payout Status:** {case['payout']}",
         f"- **Investigation Confidence:** {case['confidence']}",
         "",
         "### Executive Summary",
@@ -867,27 +874,6 @@ if "ns_online" not in st.session_state:
 if "zet_online" not in st.session_state:
     st.session_state.zet_online = check_zetaris_online()
 
-zet_dot = "green" if st.session_state.zet_online else "amber"
-zet_label = "Zetaris Data Layer: Live SQL" if st.session_state.zet_online else "Zetaris: Fallback Mode (Sample Data)"
-
-ns_dot = "green" if st.session_state.ns_online else "amber"
-ns_label = "Nightshift + Nemotron: Online" if st.session_state.ns_online else "Nightshift: Standby Mode"
-
-# --- TOP HEADER ---
-render_html(f"""
-<div class="app-header">
-    <div>
-        <div class="app-title">Hawkeye Claims Adjudicator</div>
-        <div class="app-subtitle">Automated Cyber Insurance Warranty &amp; Evidence Verification</div>
-    </div>
-    <div class="pill-row">
-        <span class="status-pill"><span class="dot {zet_dot}"></span>{zet_label}</span>
-        <span class="status-pill"><span class="dot green"></span>Meterless World Model + H-MEM</span>
-        <span class="status-pill"><span class="dot {ns_dot}"></span>{ns_label}</span>
-    </div>
-</div>
-""")
-
 # --- CLAIM SELECTOR & RUN BUTTON ---
 col_select, col_btn = st.columns([4, 1])
 with col_select:
@@ -901,6 +887,45 @@ with col_btn:
     run_clicked = st.button("Run Investigation", type="primary", use_container_width=True)
 
 case = CLAIMS[selected_id]
+active_run = st.session_state.runs.get(selected_id)
+active_world: ClaimWorldModel = active_run["world"] if active_run else None
+
+# Compute Live SQL status from actual query receipts if a run occurred
+zet_pill_cls = ""
+if active_world and active_world.sql_queries_executed:
+    has_sample = any(q.get("source") != "zetaris" for q in active_world.sql_queries_executed)
+    if has_sample:
+        zet_dot = "red"
+        zet_label = "Zetaris: SAMPLE DATA"
+        zet_pill_cls = "red"
+    else:
+        zet_dot = "green"
+        zet_label = "Zetaris Data Layer: Live SQL"
+elif st.session_state.zet_online:
+    zet_dot = "green"
+    zet_label = "Zetaris Data Layer: Live SQL"
+else:
+    zet_dot = "red"
+    zet_label = "Zetaris: SAMPLE DATA"
+    zet_pill_cls = "red"
+
+ns_dot = "green" if st.session_state.ns_online else "amber"
+ns_label = "Nightshift + Nemotron: Online" if st.session_state.ns_online else "Nightshift: Standby Mode"
+
+# --- TOP HEADER ---
+render_html(f"""
+<div class="app-header">
+    <div>
+        <div class="app-title">Hawkeye Claims Adjudicator</div>
+        <div class="app-subtitle">Automated Cyber Insurance Warranty &amp; Evidence Verification</div>
+    </div>
+    <div class="pill-row">
+        <span class="status-pill {zet_pill_cls}"><span class="dot {zet_dot}"></span>{zet_label}</span>
+        <span class="status-pill"><span class="dot green"></span>Meterless World Model + H-MEM</span>
+        <span class="status-pill"><span class="dot {ns_dot}"></span>{ns_label}</span>
+    </div>
+</div>
+""")
 
 # --- SECTION 1: CASE OVERVIEW (ALWAYS VISIBLE) ---
 render_html("""
@@ -965,7 +990,8 @@ if run_clicked:
     st.session_state.ns_online = check_nightshift_online()
     st.session_state.zet_online = check_zetaris_online()
 
-    # Live trace streaming: append each trace row as the agent loop emits it
+    # Live trace streaming: append each trace row as the agent loop emits it with pacing
+    import time
     rendered_steps = []
 
     def on_trace(agent_name: str, action: str, detail: str) -> None:
@@ -984,13 +1010,25 @@ if run_clicked:
             f'<span>{html.escape(detail)}</span>'
             f'</div>'
         )
-        trace_placeholder.markdown(
-            f'<div class="trace-container">{"".join(rendered_steps)}</div>',
-            unsafe_allow_html=True,
+        live_html = (
+            f'<div class="trace-container">'
+            f'{"".join(rendered_steps)}'
+            f'<div class="trace-row" style="border-left-color: #3B82F6; background: #EFF6FF; margin-top: 6px;">'
+            f'<span class="trace-agent" style="color: #2563EB;">⚡ {html.escape(agent_name)}</span> '
+            f'<span style="font-size: 12px; color: #64748B;">step recorded &middot; advancing adjudication loop...</span>'
+            f'</div>'
+            f'</div>'
         )
+        trace_placeholder.markdown(live_html, unsafe_allow_html=True)
+        time.sleep(0.35)
 
-    with st.spinner("Invoking multi-agent adjudication (Planner -> Specialist <-> Critic -> Reporter)..."):
-        world = run_claim(selected_id, trace_callback=on_trace)
+    status_box = st.empty()
+    status_box.info("⚡ Executing multi-agent adjudication loop: Planner → Specialist ⇄ Critic → Risk Reporter...")
+    world = run_claim(selected_id, trace_callback=on_trace)
+    status_box.empty()
+
+    final_trace_html = f'<div class="trace-container">{"".join(rendered_steps)}</div>'
+    trace_placeholder.markdown(final_trace_html, unsafe_allow_html=True)
 
     # Determine trace steps: use dynamic steps from ClaimWorldModel if present, else fallback
     trace_steps = []
@@ -1128,19 +1166,19 @@ if active_run:
         confidence_val = f"{active_world.confidence_score}%"
         if active_world.escalation_branch == "RESERVATION_OF_RIGHTS":
             v_cls = "red"
-            v_title = "COVERAGE DENIED: RESERVATION OF RIGHTS"
-            v_sub = "Material misrepresentation confirmed: MFA bypassed on admin account and vulnerability publicly known."
-            payout_val = "$0 (Claim Denied)"
+            v_title = "RESERVATION OF RIGHTS RECOMMENDED"
+            v_sub = "Apparent warranty breaches (MFA bypass, backup locks disabled) and contradicted zero-day claim. Payout on hold pending adjuster review."
+            payout_val = "Payout on hold pending adjuster review"
         elif active_world.escalation_branch == "STANDARD_APPROVAL":
             v_cls = "green"
-            v_title = "CLAIM APPROVED: FULL INDEMNIFICATION"
-            v_sub = "Forensic telemetry confirms 100% MFA compliance and immutable backup locks intact."
-            payout_val = f"{case['amount']} (Approved)"
+            v_title = "WARRANTY COMPLIANCE CONFIRMED: STANDARD PROCESSING RECOMMENDED"
+            v_sub = "Forensic telemetry confirms compliance with 100% Okta MFA and immutable backup warranties during the incident. Adjuster review required for final settlement."
+            payout_val = f"Standard processing recommended ({case['amount']} claim)"
         elif active_world.escalation_branch == "SIU_TAMPERING_ESCALATION":
             v_cls = "amber"
-            v_title = "ESCALATED: SPECIAL INVESTIGATION UNIT (EVIDENCE TAMPERING)"
-            v_sub = "Server logs prove Administrator manually wiped security audit log (EventID 1102) prior to breach."
-            payout_val = "$0 (Suspended — SIU Hold)"
+            v_title = "SPECIAL INVESTIGATION UNIT (SIU) ESCALATION"
+            v_sub = "Server logs prove Administrator manually wiped security audit log (EventID 1102) prior to breach. Fraud investigation hold."
+            payout_val = "Payout suspended pending SIU review"
 
     render_html(f"""
     <div class="verdict-card {v_cls}">
@@ -1149,8 +1187,8 @@ if active_run:
             <div class="verdict-desc">{html.escape(v_sub)}</div>
         </div>
         <div style="text-align: right; min-width: 180px;">
-            <div style="font-size: 11.5px; font-weight: 700; text-transform: uppercase; color: #64748B;">Approved Payout</div>
-            <div style="font-size: 22px; font-weight: 700; color: #0F172A;">{html.escape(payout_val)}</div>
+            <div style="font-size: 11.5px; font-weight: 700; text-transform: uppercase; color: #64748B;">Adjudication Payout Status</div>
+            <div style="font-size: 20px; font-weight: 700; color: #0F172A;">{html.escape(payout_val)}</div>
             <div style="font-size: 12px; color: #475569;">Confidence: {html.escape(confidence_val)}</div>
         </div>
     </div>
@@ -1158,9 +1196,9 @@ if active_run:
     <table class="verdict-table">
         <thead>
             <tr>
-                <th style="width: 22%;">1. Policy Requirement</th>
+                <th style="width: 22%;">1. Warranty / Claimed Fact</th>
                 <th style="width: 23%;">2. What the Broker Claimed</th>
-                <th style="width: 32%;">3. What Server Logs Proved</th>
+                <th style="width: 32%;">3. What the Evidence Proved</th>
                 <th style="width: 23%;">4. Government Records (CISA / NIST)</th>
             </tr>
         </thead>

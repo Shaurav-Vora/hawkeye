@@ -65,6 +65,6 @@ class MeterlessHMemStore:
         return json.loads(self.path.read_text())
 
     def store_decision(self, claim_id: str, decision: str, key_finding: str):
-        records = self.retrieve_precedents()
+        records = [r for r in self.retrieve_precedents() if r.get("claim_id") != claim_id]
         records.append({"claim_id": claim_id, "decision": decision, "key_finding": key_finding})
         self.path.write_text(json.dumps(records, indent=2))
