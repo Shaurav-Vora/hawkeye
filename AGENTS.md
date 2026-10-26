@@ -52,7 +52,7 @@ Did: <1 line>. Result: <pass/fail + key evidence>. Changed files: <list>. Next: 
 
 ## 2. Current State (REWRITE IN PLACE; do not append)
 
-**Last updated:** 2026-10-26 14:05 UTC · **By:** Antigravity (AI session)
+**Last updated:** 2026-10-26 15:05 UTC · **By:** Antigravity (AI session)
 
 | Area | Status | Notes |
 |---|---|---|
@@ -63,7 +63,8 @@ Did: <1 line>. Result: <pass/fail + key evidence>. Changed files: <list>. Next: 
 | Meterless engines | 🟢 World Model + H-MEM | Implemented, conformance test 23/23 PASS |
 | `graph.py` / state | 🟢 Cleaned & Verified | Templated critic; dynamic confidence; custom claims support (`custom_claim_data`); 23/23 conformance PASS |
 | Nightshift + Nemotron | 🟢 Verified & passing | Port 8088, Nemotron 30B, bounded timeout & retries |
-| Streamlit UI | 🟢 Fully merged & live | Adversarial Claim Forge studio with 4 presets; live sequential trace streaming; dynamic matrix & Live SQL badge |
+| Streamlit UI | 🟢 Fully merged & live | Adversarial Claim Forge studio; live sequential trace streaming; Live SQL badge |
+| README & Docs | 🟢 Comprehensive | Clean setup, zero-setup offline instructions, architecture diagram, benchmark claims, dependencies, and synthetic data disclosure |
 | Integration branch | 🟢 Merged & clean | Conformance 23/23 PASS; live execution tested |
 | Demo video / deck | 🔴 Not started | M3 owns |
 
@@ -351,6 +352,12 @@ streamlit run app.py
 ---
 
 ## 11. Session Log (append-only; keep last 8 verbatim, compress older → digest)
+
+### 2026-10-26 16:35 UTC | ALL | Antigravity
+Did: Clarified Critic approval semantics in UI and graph.py from ambiguous 'Approved: ...' to 'Audit Complete: ... Ruling: <BRANCH>' to prevent judges from confusing investigation completion with claim approval; cleaned dead code in app.py. Result: Conformance 23/23 PASS. Changed files: app.py, agent/graph.py, AGENTS.md. Next: PR integration→main; M3 screenshots/video/deck. Blockers: none.
+
+### 2026-10-26 15:05 UTC | ALL | Antigravity
+Did: Wrote comprehensive, judge-friendly README.md covering executive problem/solution, architecture diagram, 4-agent loop, benchmark scenarios, zero-setup offline quick start, guided demo walkthrough, dependencies, and synthetic data disclosure. Result: README.md verified; 23/23 conformance PASS. Changed files: README.md, AGENTS.md. Next: PR integration→main; M3 screenshots/video/deck. Blockers: none.
 
 ### 2026-10-26 14:05 UTC | ALL | Antigravity
 Did: Built Adversarial Claim Forge (Option 1): added custom claim synthesis studio in app.py with 4 one-click presets, dynamic underwriting policy configuration, broker allegations, and machine telemetry injection; updated sample_backend.py with register_custom_claim and ensure_cve_in_intel; wired ClaimWorldModel.custom_claim_data in agent/graph.py; dynamic contradiction matrix generation. Result: Conformance 23/23 PASS; end-to-end custom claim test verified (RESERVATION_OF_RIGHTS, 3 contradictions, 2 revisions). Changed files: app.py, agent/graph.py, agent/sample_backend.py, agent/meterless_state.py, .gitignore, AGENTS.md. Next: PR integration→main; M3 screenshots/video/deck. Blockers: none.

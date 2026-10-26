@@ -339,9 +339,9 @@ def critic_node(state: GraphState) -> GraphState:
             branch = "STANDARD_APPROVAL"
         w.escalation_branch = branch
         w.confidence_score = _confidence(w, branch)
-        msg = f"Approved: Raw telemetry and threat intel cross-checked against underwriting attestations. Branch: {branch}."
+        msg = f"Audit Complete: Raw telemetry and threat intel cross-checked against underwriting attestations. Ruling: {branch}."
         w.critic_feedback.append(msg)
-        _trace(w, "Critic", "APPROVE", msg)
+        _trace(w, "Critic", "APPROVE_AUDIT", msg)
     return {"world": w}
 
 
