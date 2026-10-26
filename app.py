@@ -967,7 +967,7 @@ if run_clicked:
     st.session_state.zet_online = check_zetaris_online()
 
     with st.spinner("Invoking multi-agent adjudication (Planner -> Specialist <-> Critic -> Reporter)..."):
-        world = run_claim(selected_id, max_passes=3)
+        world = run_claim(selected_id)
 
     # Determine trace steps: use dynamic steps from ClaimWorldModel if present, else fallback
     trace_steps = []
