@@ -52,7 +52,7 @@ Did: <1 line>. Result: <pass/fail + key evidence>. Changed files: <list>. Next: 
 
 ## 2. Current State (REWRITE IN PLACE; do not append)
 
-**Last updated:** 2026-10-26 12:35 UTC · **By:** Antigravity (AI session)
+**Last updated:** 2026-10-26 14:05 UTC · **By:** Antigravity (AI session)
 
 | Area | Status | Notes |
 |---|---|---|
@@ -61,9 +61,9 @@ Did: <1 line>. Result: <pass/fail + key evidence>. Changed files: <list>. Next: 
 | `tools_zetaris.py` | 🟢 ALL PASS live | `python -m agent.tools_zetaris` verified against real Zetaris 2026-10-25 |
 | `seed_sql.py` | 🟢 Written + verified | 18 statements, skips-already-exists, ALL PASS on live Zetaris 2026-10-25 |
 | Meterless engines | 🟢 World Model + H-MEM | Implemented, conformance test 23/23 PASS |
-| `graph.py` / state | 🟢 Cleaned & Verified | Templated critic (no hallucinated tables); CVSS v3.1; dynamic confidence; LRU-cached Pass 3; 23/23 conformance PASS |
+| `graph.py` / state | 🟢 Cleaned & Verified | Templated critic; dynamic confidence; custom claims support (`custom_claim_data`); 23/23 conformance PASS |
 | Nightshift + Nemotron | 🟢 Verified & passing | Port 8088, Nemotron 30B, bounded timeout & retries |
-| Streamlit UI | 🟢 Fully merged & live | One-by-one sequential trace streaming; dynamic Live SQL badge from receipts; Reservation of Rights & Standard Processing semantics |
+| Streamlit UI | 🟢 Fully merged & live | Adversarial Claim Forge studio with 4 presets; live sequential trace streaming; dynamic matrix & Live SQL badge |
 | Integration branch | 🟢 Merged & clean | Conformance 23/23 PASS; live execution tested |
 | Demo video / deck | 🔴 Not started | M3 owns |
 
@@ -320,6 +320,7 @@ Endpoint: `POST {ZETARIS_REST_URL}/sql-editor/sqls/run`, headers `Authorization:
 - If Zetaris container can't reach `host.docker.internal:5433`, attach claimsdb to Zetaris's compose network (`docker network connect <zetaris_net> claimsdb`) and use `jdbc:postgresql://claimsdb:5432/claims`.
 - KEV JSON also has a `forensicTriage` field and `cwes` array (not in our view).
 
+- 2026-10-26: **Adversarial Claim Forge Architecture:** Custom claims synthesized at runtime are registered into `sample_backend.py`'s in-memory SQLite tables, while external threat intelligence joins query live Zetaris / synced KEV records via `ensure_cve_in_intel()`. This gives judges full interactive scenario generation without requiring live remote git pushes during adjudication demos.
 - Zetaris REST SQL can return numeric values (e.g. `claim_amount_usd`) as strings (e.g. `"1400000"`); always parse safely with `int(float(clean))` before applying comma formatting like `f"${amt:,}"`.
 
 **Open questions**
@@ -350,6 +351,9 @@ streamlit run app.py
 ---
 
 ## 11. Session Log (append-only; keep last 8 verbatim, compress older → digest)
+
+### 2026-10-26 14:05 UTC | ALL | Antigravity
+Did: Built Adversarial Claim Forge (Option 1): added custom claim synthesis studio in app.py with 4 one-click presets, dynamic underwriting policy configuration, broker allegations, and machine telemetry injection; updated sample_backend.py with register_custom_claim and ensure_cve_in_intel; wired ClaimWorldModel.custom_claim_data in agent/graph.py; dynamic contradiction matrix generation. Result: Conformance 23/23 PASS; end-to-end custom claim test verified (RESERVATION_OF_RIGHTS, 3 contradictions, 2 revisions). Changed files: app.py, agent/graph.py, agent/sample_backend.py, agent/meterless_state.py, .gitignore, AGENTS.md. Next: PR integration→main; M3 screenshots/video/deck. Blockers: none.
 
 ### 2026-10-26 13:15 UTC | ALL | Antigravity
 Did: Computed confidence dynamically from evidence volume/breadth (thin single-log claims score 60%, multi-source CLM-101 scores 95%, max 95%); replaced H-MEM precedent appending with deduplicating store_decision (records replaced in place); cleaned hmem_precedents.json; updated Pass 1 bullet to 'Broker narrative not yet verified against telemetry'; updated table badges to 'WARRANTY BREACHED (per logs)'. Result: Conformance 23/23 PASS. Changed files: agent/graph.py, agent/meterless_state.py, agent/conformance_test.py, hmem_precedents.json, app.py, AGENTS.md. Next: PR integration→main; M3 screenshots/video/deck. Blockers: none.

@@ -25,7 +25,7 @@ from dotenv import load_dotenv
 from agent import llm
 from agent.meterless_state import ClaimWorldModel, ContradictionLink, MeterlessHMemStore
 from agent.prompts import CRITIC_PROMPT, PLANNER_PROMPT, RISK_PROMPT, SPECIALIST_PROMPT
-from agent.sample_backend import run_sql_sample
+from agent.sample_backend import ensure_cve_in_intel, run_sql_sample
 from agent.tools_zetaris import ZetarisError
 from agent.tools_zetaris import run_sql as zetaris_run_sql
 
@@ -82,8 +82,11 @@ def _cached_zetaris_run_sql(sql: str) -> dict:
 def _query(w: ClaimWorldModel, pass_no: int, purpose: str, sql: str, cols: list[str]) -> list[dict]:
     """Run ONE statement (Zetaris, or the sample backend) and record a SQL receipt."""
     note = ""
-    if _sample_mode():
+    is_custom = bool(w.custom_claim_data or w.claim_id.startswith("CLM-FORGE") or w.claim_id.startswith("CLM-CUSTOM"))
+    if _sample_mode() or is_custom:
         res = run_sql_sample(sql)
+        if is_custom:
+            note = "Federated session: custom claim scenario"
     else:
         try:
             # Cached by query string to prevent NIST NVD throttling during evaluation
@@ -221,6 +224,9 @@ def _years(d1: str, d2: str) -> str:
 
 
 def _pass3(w: ClaimWorldModel) -> None:
+    cve = w.narrative_claims.get("claimed_cve")
+    if cve:
+        ensure_cve_in_intel(str(cve).strip())
     intel = _query(
         w, 3, "External threat intel (CISA KEV + NIST NVD)",
         "SELECT b.claim_id, b.claimed_cve, k.dateAdded, k.knownRansomwareCampaignUse, "
@@ -472,9 +478,9 @@ def _run_plain(hmem: MeterlessHMemStore, state: GraphState) -> GraphState:
     return make_reporter(hmem)(state)
 
 
-def run_claim(claim_id: str, hmem_path: str = "hmem_precedents.json", max_passes: int = 3, trace_callback=None, **kwargs) -> ClaimWorldModel:
+def run_claim(claim_id: str, hmem_path: str = "hmem_precedents.json", max_passes: int = 3, trace_callback=None, custom_claim_data: dict = None, **kwargs) -> ClaimWorldModel:
     hmem = MeterlessHMemStore(filepath=hmem_path)
-    init: GraphState = {"world": ClaimWorldModel(claim_id=claim_id, max_passes=max_passes, trace_callback=trace_callback)}
+    init: GraphState = {"world": ClaimWorldModel(claim_id=claim_id, max_passes=max_passes, trace_callback=trace_callback, custom_claim_data=custom_claim_data or {})}
     try:
         out = build_graph(hmem).invoke(init, {"recursion_limit": 40})
     except ImportError:

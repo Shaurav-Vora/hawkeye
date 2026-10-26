@@ -25,3 +25,4 @@ htmlcov/
 
 # Persistent run-generated files
 hmem_precedents.json
+scratch/

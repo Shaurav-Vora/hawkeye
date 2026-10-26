@@ -40,6 +40,7 @@ class ClaimWorldModel(BaseModel):
     final_dossier_markdown: str = ""
     # Optional callback for live trace streaming: called with (agent, action, detail) for each trace entry
     trace_callback: Any = None
+    custom_claim_data: Dict[str, Any] = Field(default_factory=dict)
 
 
 _SEED_PRECEDENT = {
