@@ -52,7 +52,7 @@ Did: <1 line>. Result: <pass/fail + key evidence>. Changed files: <list>. Next: 
 
 ## 2. Current State (REWRITE IN PLACE; do not append)
 
-**Last updated:** 2026-10-26 15:05 UTC · **By:** Antigravity (AI session)
+**Last updated:** 2026-10-30 13:48 UTC · **By:** Antigravity (AI session)
 
 | Area | Status | Notes |
 |---|---|---|
@@ -65,7 +65,7 @@ Did: <1 line>. Result: <pass/fail + key evidence>. Changed files: <list>. Next: 
 | Nightshift + Nemotron | 🟢 Verified & passing | Port 8088, Nemotron 30B, bounded timeout & retries |
 | Streamlit UI | 🟢 Fully merged & live | Adversarial Claim Forge studio; live sequential trace streaming; Live SQL badge |
 | README & Docs | 🟢 Comprehensive | Clean setup, zero-setup offline instructions, architecture diagram, benchmark claims, dependencies, and synthetic data disclosure |
-| Integration branch | 🟢 Merged & clean | Conformance 23/23 PASS; live execution tested |
+| Integration branch | 🟢 Merged into main | integration/m1-m2-merge merged into main; 23/23 conformance PASS |
 | Demo video / deck | 🔴 Not started | M3 owns |
 
 **Legend:** 🔴 not started · 🟡 in progress/partial · 🟢 done & verified
@@ -352,6 +352,9 @@ streamlit run app.py
 ---
 
 ## 11. Session Log (append-only; keep last 8 verbatim, compress older → digest)
+
+### 2026-10-30 13:48 UTC | ALL | Antigravity
+Did: Merged branch integration/m1-m2-merge into main keeping all branch changes and commit history. Result: Fast-forward merge cleanly completed (18 files, +4298/-70); 23/23 conformance tests PASS. Changed files: AGENTS.md. Next: Push main to origin; save execution traces (M2-13); pitch deck / video (M3). Blockers: none.
 
 ### 2026-10-26 16:35 UTC | ALL | Antigravity
 Did: Clarified Critic approval semantics in UI and graph.py from ambiguous 'Approved: ...' to 'Audit Complete: ... Ruling: <BRANCH>' to prevent judges from confusing investigation completion with claim approval; cleaned dead code in app.py. Result: Conformance 23/23 PASS. Changed files: app.py, agent/graph.py, AGENTS.md. Next: PR integration→main; M3 screenshots/video/deck. Blockers: none.
